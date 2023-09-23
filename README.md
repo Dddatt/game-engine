@@ -8,4 +8,5 @@ Supports:
 - Deferred Rendering
 - Post Processing
 - Freedom to Implement Anything Using Scripts
+- OBJ Loading
 
