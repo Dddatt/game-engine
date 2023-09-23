@@ -1,0 +1,3528 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ge</title>
+</head>
+
+<body style='margin:0px;font-family:monospace;user-select:none;color:rgb(220,220,220);'>
+
+<style>
+    #mainProgramDIV{
+        width:100%;
+    }
+    div::-webkit-scrollbar{
+	    
+        width:4px;
+        height:4px;
+        background-color:rgb(0,0,0,0); 
+    }
+    div::-webkit-scrollbar-thumb{
+        
+        background:rgb(255,255,255,0.5);
+        border-radius:5px;
+    }
+    svg{
+        width:100%;height:100%;
+    }
+    input,select{
+        background-color:rgb(0,0,0,0.4);
+        border:0px;
+        color:rgb(220,220,220);
+        font-family:trebuchet ms;
+        outline:none;
+        padding-left:3px;
+        padding-right:3px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+    input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{
+        -webkit-appearance:none
+    }
+    .area{
+        position:fixed;
+        background-color:rgb(50,50,50);
+        border:2px solid rgb(0,0,0,0.6);
+    }
+    .eventButton,button{
+        background-color:rgb(0,0,0,0.4);
+        border-radius:2px;
+        position:absolute;
+        border:none;
+        color:rgb(220,220,220);
+    }
+    .eventButton:hover,button:hover{
+        background-color:rgb(0,0,0,0.7);
+        cursor:pointer;
+    }
+    .assetItemInList{
+        display:inline-block;
+        border-radius:5px;
+        background-color:rgb(0,0,0,0.2);
+        text-align:center;
+        padding:5px;
+        margin:1px 3px;
+        font-family:arial;
+        font-size:15px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        overflow-y:auto;
+    }
+    .assetItemInList:hover{
+        background-color:rgb(0,0,0,0.3);
+    }
+    .hierarchyItemInList{
+        font-size:14px;
+        font-family:arial;
+        margin-top:0px;
+        width:100%;
+        height:20px;
+    }
+    .hierarchyItemInList:hover{
+        background-color:rgb(0,0,0,0.2);
+    }
+    .pipelineItemInList{
+        font-size:14px;
+        margin-top:0px;
+        width:100%;
+        text-align:center;
+    }
+    .pipelineItemInList:hover{
+        cursor:pointer;
+        background-color:rgb(0,0,0,0.2);
+    }
+    .tabButton{
+        position:absolute;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        font-size:10px;
+        text-align:center;
+        padding-top:4px;
+        cursor:pointer;
+    }
+    #contextMenu{
+        color:rgb(220,220,220);
+        position:fixed;
+        display:none;
+        text-align:center;
+    }
+    .contextMenuOption{
+        font-size:10px;
+        background-color:rgb(30,30,30);
+        padding:3px;
+        white-space:nowrap;
+    }
+    .contextMenuOption:hover{
+        background-color:rgb(15,15,15);
+        cursor:pointer;
+    }
+</style>
+
+<div id='leftArea' class='area'>
+    <div class='tabButton' id='hierarchyTabButton' style='left:0%;right:50%;top:0px;height:18px;bottom:10px'><b>Hierarchy</b></div>
+    <div class='tabButton' id='pipelineTabButton' style='left:50%;right:0%;top:0px;height:18px;background-color:rgb(0,0,0,0.4);'><b>Pipeline</b></div>
+    <div id='hierarchyPage' style='position:absolute;left:0%;top:35px;bottom:0%;right:0%;overflow-x:hidden;overflow-y:auto'></div>
+    <div id='pipelinePage' style='position:absolute;left:0%;top:35px;bottom:0%;right:0%;overflow-x:hidden;overflow-y:auto'></div>
+</div>
+
+<div id='previewArea' class='area'>
+    
+    <div style='width:100%;height:30px;border-bottom:3px solid rgb(0,0,0,0.6)'>
+        <div class='eventButton' id='runProgramButton' style='left:4px;top:4px;width:22px;height:22px' title='Run Program'>
+            <svg>
+                <path d='M6 6L6 16L16 11' fill='rgb(210,210,210)'></path>
+            </svg>
+        </div>
+        <div class='eventButton' id='openProgramButton' style='left:32px;top:4px;width:22px;height:22px' title='Open Program in New Tab'>
+            <div style='font-size:18px;margin-top:-2px;margin-left:6px'>🠩</div>
+        </div>
+        <div class='eventButton' id='printDataButton' style='left:60px;top:4px;width:22px;height:22px' title='Print Program JSON'>
+            <svg>
+                <text style='font-size:9px;' fill='rgb(210,210,210)' x='6' y='9'>JS</text>
+                <text style='font-size:9px;' fill='rgb(210,210,210)' x='6' y='19'>ON</text>
+            </svg>
+        </div>
+        <div class='eventButton' id='loadDataButton' style='left:88px;top:4px;width:22px;height:22px' title='Load Program with JSON'>
+            <svg>
+                <text style='font-size:17px;' fill='rgb(210,210,210)' stroke='rgb(210,210,210)' x='7' y='17'>↧</text>
+            </svg>
+        </div>
+    </div>
+    <div id='mainProgramDIV'>
+    </div>
+
+</div>
+
+<div id='rightArea' class='area'>
+    <div class='tabButton' id='propertiesTabButton' style='left:0%;right:50%;top:0px;height:18px;bottom:10px'><b>Properties</b></div>
+    <div class='tabButton' id='settingsTabButton' style='left:50%;right:0%;top:0px;height:18px;background-color:rgb(0,0,0,0.4);'><b>Settings</b></div>
+    <div id='propertiesPage' style='position:absolute;left:0%;top:35px;bottom:0%;right:0%;overflow-x:hidden;overflow-y:auto'></div>
+    <div id='settingsPage' style='position:absolute;left:0%;top:35px;bottom:0%;right:0%;overflow-x:hidden;overflow-y:auto'></div>
+</div>
+
+<div id='bottomArea' class='area'>
+    <div style='background-color:rgb(0,0,0,0.4);left:0%;right:100%;top:0%;height:5px;'></div>
+    <div class='tabButton' id='assetsTabButton' style='left:0%;right:66.666%;top:5px;height:18px;bottom:10px'><b>Assets</b></div>
+    <div class='tabButton' id='scriptTabButton' style='left:33.333%;right:33.333%;top:5px;height:18px;background-color:rgb(0,0,0,0.4);'><b>Script</b></div>
+    <div class='tabButton' id='consoleTabButton' style='left:66.666%;right:0%;top:5px;height:18px;background-color:rgb(0,0,0,0.4);'><b>Console</b></div>
+    
+    <div id='assetsPage' style='position:absolute;left:0%;top:30px;bottom:0%;right:0%;overflow-x:hidden;overflow-y:auto'>
+        <div id='assetsPageList' style='position:absolute;overflow-y:auto;width:100%;height:100%'></div>
+        
+    </div>
+    <div id='scriptPage' style='position:absolute;left:0%;top:30px;bottom:0%;right:0%;overflow:hidden;background-color:rgb(0,0,0,0.25)'>
+        <div id='emptyScriptDiv' style='position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center'>You have no selected scripts.</div>
+        <div style='height:14px;display:none' id='selectedScript'>
+            <div id='scriptNameScriptPage' style='position:absolute;left:5px;top:2px;font-size:17px'></div>
+            <div class='eventButton' id='saveScriptPage' style='right:3px;top:3px;padding:2px 4px 2px 4px'>Save</div>
+        </div>
+        <textarea id='editorCode'></textarea>
+    </div>
+    <div id='consolePage' style='position:absolute;left:0%;top:30px;bottom:0%;right:0%;overflow:hidden;padding-bottom:25px'>
+        <div class='eventButton' id='clearConsoleButton' style='left:2px;top:0px;width:22px;height:22px'>
+            <svg>
+                <path d='M6 6L16 16M16 6L6 16' stroke-width='2' stroke='rgb(210,210,210)'></path>
+            </svg>
+        </div>
+        <div id='consolePageList' style='margin-top:25px;height:100%;background-color:rgb(0,0,0,0.25);overflow-y:auto;'></div>
+    </div>
+</div>
+
+<div id='contextMenu'></div>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js'></script>
+<script src='https://cdn.jsdelivr.net/gh/Dddatt/D.js@v2.3.0/index.js'></script>
+<script src='compiler.js'></script>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/theme-monokai.min.js'></script>
+
+<script type>define("ace/mode/doc_comment_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"],function(e,t,n){"use strict";var r=e("../lib/oop"),o=e("./text_highlight_rules").TextHighlightRules,a=function(){this.$rules={start:[{token:"comment.doc.tag",regex:"@[\\w\\d_]+"},a.getTagRule(),{defaultToken:"comment.doc",caseInsensitive:!0}]}};r.inherits(a,o),a.getTagRule=function(e){return{token:"comment.doc.tag.storage.type",regex:"\\b(?:TODO|FIXME|XXX|HACK)\\b"}},a.getStartRule=function(e){return{token:"comment.doc",regex:"\\/\\*(?=\\*)",next:e}},a.getEndRule=function(e){return{token:"comment.doc",regex:"\\*\\/",next:e}},t.DocCommentHighlightRules=a}),define("ace/mode/javascript_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/doc_comment_highlight_rules","ace/mode/text_highlight_rules"],function(e,t,n){"use strict";function r(e){return[{token:"comment",regex:/\/\*/,next:[i.getTagRule(),{token:"comment",regex:"\\*\\/",next:e||"pop"},{defaultToken:"comment",caseInsensitive:!0}]},{token:"comment",regex:"\\/\\/",next:[i.getTagRule(),{token:"comment",regex:"$|^",next:e||"pop"},{defaultToken:"comment",caseInsensitive:!0}]}]}function o(e){var t=this.createKeywordMapper({"variable.language":"Array|Boolean|Date|Function|Iterator|Number|Object|RegExp|String|Proxy|Namespace|QName|XML|XMLList|ArrayBuffer|Float32Array|Float64Array|Int16Array|Int32Array|Int8Array|Uint16Array|Uint32Array|Uint8Array|Uint8ClampedArray|Error|EvalError|InternalError|RangeError|ReferenceError|StopIteration|SyntaxError|TypeError|URIError|decodeURI|decodeURIComponent|encodeURI|encodeURIComponent|eval|isFinite|isNaN|parseFloat|parseInt|JSON|Math|This|Engine|D|arguments|prototype|window|document",keyword:"const|yield|import|get|set|async|await|break|case|catch|continue|default|delete|do|else|finally|for|function|if|in|of|instanceof|new|return|switch|throw|try|typeof|let|var|while|with|debugger|__parent__|__count__|escape|unescape|with|__proto__|class|enum|extends|super|export|implements|private|public|interface|package|protected|static","storage.type":"const|let|var|function","constant.language":"null|Infinity|NaN|undefined","support.function":"alert","constant.language.boolean":"true|false"},"identifier"),n="\\\\(?:x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|u{[0-9a-fA-F]{1,6}}|[0-2][0-7]{0,2}|3[0-7][0-7]?|[4-7][0-7]?|.)";this.$rules={no_regex:[i.getStartRule("doc-start"),r("no_regex"),{token:"string",regex:"'(?=.)",next:"qstring"},{token:"string",regex:'"(?=.)',next:"qqstring"},{token:"constant.numeric",regex:/0(?:[xX][0-9a-fA-F]+|[oO][0-7]+|[bB][01]+)\b/},{token:"constant.numeric",regex:/(?:\d\d*(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+\b)?/},{token:["storage.type","punctuation.operator","support.function","punctuation.operator","entity.name.function","text","keyword.operator"],regex:"("+g+")(\\.)(prototype)(\\.)("+g+")(\\s*)(=)",next:"function_arguments"},{token:["storage.type","punctuation.operator","entity.name.function","text","keyword.operator","text","storage.type","text","paren.lparen"],regex:"("+g+")(\\.)("+g+")(\\s*)(=)(\\s*)(function)(\\s*)(\\()",next:"function_arguments"},{token:["entity.name.function","text","keyword.operator","text","storage.type","text","paren.lparen"],regex:"("+g+")(\\s*)(=)(\\s*)(function)(\\s*)(\\()",next:"function_arguments"},{token:["storage.type","punctuation.operator","entity.name.function","text","keyword.operator","text","storage.type","text","entity.name.function","text","paren.lparen"],regex:"("+g+")(\\.)("+g+")(\\s*)(=)(\\s*)(function)(\\s+)(\\w+)(\\s*)(\\()",next:"function_arguments"},{token:["storage.type","text","entity.name.function","text","paren.lparen"],regex:"(function)(\\s+)("+g+")(\\s*)(\\()",next:"function_arguments"},{token:["entity.name.function","text","punctuation.operator","text","storage.type","text","paren.lparen"],regex:"("+g+")(\\s*)(:)(\\s*)(function)(\\s*)(\\()",next:"function_arguments"},{token:["text","text","storage.type","text","paren.lparen"],regex:"(:)(\\s*)(function)(\\s*)(\\()",next:"function_arguments"},{token:"keyword",regex:"from(?=\\s*('|\"))"},{token:"keyword",regex:"(?:case|do|else|finally|in|instanceof|return|throw|try|typeof|yield|void)\\b",next:"start"},{token:["support.constant"],regex:/this|that\b/},{token:["storage.type","punctuation.operator","support.function.firebug"],regex:/(console)(\.)(warn|info|log|error|time|trace|timeEnd|assert)\b/},{token:t,regex:g},{token:"punctuation.operator",regex:/[.](?![.])/,next:"property"},{token:"storage.type",regex:/=>/,next:"start"},{token:"keyword.operator",regex:/--|\+\+|\.{3}|===|==|=|!=|!==|<+=?|>+=?|!|&&|\|\||\?:|[!$%&*+\-~\/^]=?/,next:"start"},{token:"punctuation.operator",regex:/[?:,;.]/,next:"start"},{token:"paren.lparen",regex:/[\[({]/,next:"start"},{token:"paren.rparen",regex:/[\])}]/},{token:"comment",regex:/^#!.*$/}],property:[{token:"text",regex:"\\s+"},{token:["storage.type","punctuation.operator","entity.name.function","text","keyword.operator","text","storage.type","text","entity.name.function","text","paren.lparen"],regex:"("+g+")(\\.)("+g+")(\\s*)(=)(\\s*)(function)(?:(\\s+)(\\w+))?(\\s*)(\\()",next:"function_arguments"},{token:"punctuation.operator",regex:/[.](?![.])/},{token:"support.function",regex:/(s(?:h(?:ift|ow(?:Mod(?:elessDialog|alDialog)|Help))|croll(?:X|By(?:Pages|Lines)?|Y|To)?|t(?:op|rike)|i(?:n|zeToContent|debar|gnText)|ort|u(?:p|b(?:str(?:ing)?)?)|pli(?:ce|t)|e(?:nd|t(?:Re(?:sizable|questHeader)|M(?:i(?:nutes|lliseconds)|onth)|Seconds|Ho(?:tKeys|urs)|Year|Cursor|Time(?:out)?|Interval|ZOptions|Date|UTC(?:M(?:i(?:nutes|lliseconds)|onth)|Seconds|Hours|Date|FullYear)|FullYear|Active)|arch)|qrt|lice|avePreferences|mall)|h(?:ome|andleEvent)|navigate|c(?:har(?:CodeAt|At)|o(?:s|n(?:cat|textual|firm)|mpile)|eil|lear(?:Timeout|Interval)?|a(?:ptureEvents|ll)|reate(?:StyleSheet|Popup|EventObject))|t(?:o(?:GMTString|S(?:tring|ource)|U(?:TCString|pperCase)|Lo(?:caleString|werCase))|est|a(?:n|int(?:Enabled)?))|i(?:s(?:NaN|Finite)|ndexOf|talics)|d(?:isableExternalCapture|ump|etachEvent)|u(?:n(?:shift|taint|escape|watch)|pdateCommands)|j(?:oin|avaEnabled)|p(?:o(?:p|w)|ush|lugins.refresh|a(?:ddings|rse(?:Int|Float)?)|r(?:int|ompt|eference))|e(?:scape|nableExternalCapture|val|lementFromPoint|x(?:p|ec(?:Script|Command)?))|valueOf|UTC|queryCommand(?:State|Indeterm|Enabled|Value)|f(?:i(?:nd|le(?:ModifiedDate|Size|CreatedDate|UpdatedDate)|xed)|o(?:nt(?:size|color)|rward)|loor|romCharCode)|watch|l(?:ink|o(?:ad|g)|astIndexOf)|a(?:sin|nchor|cos|t(?:tachEvent|ob|an(?:2)?)|pply|lert|b(?:s|ort))|r(?:ou(?:nd|teEvents)|e(?:size(?:By|To)|calc|turnValue|place|verse|l(?:oad|ease(?:Capture|Events)))|andom)|g(?:o|et(?:ResponseHeader|M(?:i(?:nutes|lliseconds)|onth)|Se(?:conds|lection)|Hours|Year|Time(?:zoneOffset)?|Da(?:y|te)|UTC(?:M(?:i(?:nutes|lliseconds)|onth)|Seconds|Hours|Da(?:y|te)|FullYear)|FullYear|A(?:ttention|llResponseHeaders)))|m(?:in|ove(?:B(?:y|elow)|To(?:Absolute)?|Above)|ergeAttributes|a(?:tch|rgins|x))|b(?:toa|ig|o(?:ld|rderWidths)|link|ack))\b(?=\()/},{token:"support.function.dom",regex:/(s(?:ub(?:stringData|mit)|plitText|e(?:t(?:NamedItem|Attribute(?:Node)?)|lect))|has(?:ChildNodes|Feature)|namedItem|c(?:l(?:ick|o(?:se|neNode))|reate(?:C(?:omment|DATASection|aption)|T(?:Head|extNode|Foot)|DocumentFragment|ProcessingInstruction|E(?:ntityReference|lement)|Attribute))|tabIndex|i(?:nsert(?:Row|Before|Cell|Data)|tem)|open|delete(?:Row|C(?:ell|aption)|T(?:Head|Foot)|Data)|focus|write(?:ln)?|a(?:dd|ppend(?:Child|Data))|re(?:set|place(?:Child|Data)|move(?:NamedItem|Child|Attribute(?:Node)?)?)|get(?:NamedItem|Element(?:sBy(?:Name|TagName|ClassName)|ById)|Attribute(?:Node)?)|blur)\b(?=\()/},{token:"support.constant",regex:/(s(?:ystemLanguage|cr(?:ipts|ollbars|een(?:X|Y|Top|Left))|t(?:yle(?:Sheets)?|atus(?:Text|bar)?)|ibling(?:Below|Above)|ource|uffixes|e(?:curity(?:Policy)?|l(?:ection|f)))|h(?:istory|ost(?:name)?|as(?:h|Focus))|y|X(?:MLDocument|SLDocument)|n(?:ext|ame(?:space(?:s|URI)|Prop))|M(?:IN_VALUE|AX_VALUE)|c(?:haracterSet|o(?:n(?:structor|trollers)|okieEnabled|lorDepth|mp(?:onents|lete))|urrent|puClass|l(?:i(?:p(?:boardData)?|entInformation)|osed|asses)|alle(?:e|r)|rypto)|t(?:o(?:olbar|p)|ext(?:Transform|Indent|Decoration|Align)|ags)|SQRT(?:1_2|2)|i(?:n(?:ner(?:Height|Width)|put)|ds|gnoreCase)|zIndex|o(?:scpu|n(?:readystatechange|Line)|uter(?:Height|Width)|p(?:sProfile|ener)|ffscreenBuffering)|NEGATIVE_INFINITY|d(?:i(?:splay|alog(?:Height|Top|Width|Left|Arguments)|rectories)|e(?:scription|fault(?:Status|Ch(?:ecked|arset)|View)))|u(?:ser(?:Profile|Language|Agent)|n(?:iqueID|defined)|pdateInterval)|_content|p(?:ixelDepth|ort|ersonalbar|kcs11|l(?:ugins|atform)|a(?:thname|dding(?:Right|Bottom|Top|Left)|rent(?:Window|Layer)?|ge(?:X(?:Offset)?|Y(?:Offset)?))|r(?:o(?:to(?:col|type)|duct(?:Sub)?|mpter)|e(?:vious|fix)))|e(?:n(?:coding|abledPlugin)|x(?:ternal|pando)|mbeds)|v(?:isibility|endor(?:Sub)?|Linkcolor)|URLUnencoded|P(?:I|OSITIVE_INFINITY)|f(?:ilename|o(?:nt(?:Size|Family|Weight)|rmName)|rame(?:s|Element)|gColor)|E|whiteSpace|l(?:i(?:stStyleType|n(?:eHeight|kColor))|o(?:ca(?:tion(?:bar)?|lName)|wsrc)|e(?:ngth|ft(?:Context)?)|a(?:st(?:M(?:odified|atch)|Index|Paren)|yer(?:s|X)|nguage))|a(?:pp(?:MinorVersion|Name|Co(?:deName|re)|Version)|vail(?:Height|Top|Width|Left)|ll|r(?:ity|guments)|Linkcolor|bove)|r(?:ight(?:Context)?|e(?:sponse(?:XML|Text)|adyState))|global|x|m(?:imeTypes|ultiline|enubar|argin(?:Right|Bottom|Top|Left))|L(?:N(?:10|2)|OG(?:10E|2E))|b(?:o(?:ttom|rder(?:Width|RightWidth|BottomWidth|Style|Color|TopWidth|LeftWidth))|ufferDepth|elow|ackground(?:Color|Image)))\b/},{token:"identifier",regex:g},{regex:"",token:"empty",next:"no_regex"}],start:[i.getStartRule("doc-start"),r("start"),{token:"string.regexp",regex:"\\/",next:"regex"},{token:"text",regex:"\\s+|^$",next:"start"},{token:"empty",regex:"",next:"no_regex"}],regex:[{token:"regexp.keyword.operator",regex:"\\\\(?:u[\\da-fA-F]{4}|x[\\da-fA-F]{2}|.)"},{token:"string.regexp",regex:"/[sxngimy]*",next:"no_regex"},{token:"invalid",regex:/\{\d+\b,?\d*\}[+*]|[+*$^?][+*]|[$^][?]|\?{3,}/},{token:"constant.language.escape",regex:/\(\?[:=!]|\)|\{\d+\b,?\d*\}|[+*]\?|[()$^+*?.]/},{token:"constant.language.delimiter",regex:/\|/},{token:"constant.language.escape",regex:/\[\^?/,next:"regex_character_class"},{token:"empty",regex:"$",next:"no_regex"},{defaultToken:"string.regexp"}],regex_character_class:[{token:"regexp.charclass.keyword.operator",regex:"\\\\(?:u[\\da-fA-F]{4}|x[\\da-fA-F]{2}|.)"},{token:"constant.language.escape",regex:"]",next:"regex"},{token:"constant.language.escape",regex:"-"},{token:"empty",regex:"$",next:"no_regex"},{defaultToken:"string.regexp.charachterclass"}],function_arguments:[{token:"variable.parameter",regex:g},{token:"punctuation.operator",regex:"[, ]+"},{token:"punctuation.operator",regex:"$"},{token:"empty",regex:"",next:"no_regex"}],qqstring:[{token:"constant.language.escape",regex:n},{token:"string",regex:"\\\\$",consumeLineEnd:!0},{token:"string",regex:'"|$',next:"no_regex"},{defaultToken:"string"}],qstring:[{token:"constant.language.escape",regex:n},{token:"string",regex:"\\\\$",consumeLineEnd:!0},{token:"string",regex:"'|$",next:"no_regex"},{defaultToken:"string"}]},e&&e.noES6||(this.$rules.no_regex.unshift({regex:"[{}]",onMatch:function(e,t,n){if(this.next="{"==e?this.nextState:"","{"==e&&n.length)n.unshift("start",t);else if("}"==e&&n.length&&(n.shift(),this.next=n.shift(),-1!=this.next.indexOf("string")||-1!=this.next.indexOf("jsx")))return"paren.quasi.end";return"{"==e?"paren.lparen":"paren.rparen"},nextState:"start"},{token:"string.quasi.start",regex:/`/,push:[{token:"constant.language.escape",regex:n},{token:"paren.quasi.start",regex:/\${/,push:"start"},{token:"string.quasi.end",regex:/`/,next:"pop"},{defaultToken:"string.quasi"}]}),e&&0==e.jsx||function(){var e=g.replace("\\d","\\d\\-"),t={onMatch:function(e,t,n){var r="/"==e.charAt(1)?2:1;return 1==r?(t!=this.nextState?n.unshift(this.next,this.nextState,0):n.unshift(this.next),n[2]++):2==r&&t==this.nextState&&(n[1]--,(!n[1]||n[1]<0)&&(n.shift(),n.shift())),[{type:"meta.tag.punctuation."+(1==r?"":"end-")+"tag-open.xml",value:e.slice(0,r)},{type:"meta.tag.tag-name.xml",value:e.substr(r)}]},regex:"</?"+e,next:"jsxAttributes",nextState:"jsx"};this.$rules.start.unshift(t);var n={regex:"{",token:"paren.quasi.start",push:"start"};this.$rules.jsx=[n,t,{include:"reference"},{defaultToken:"string"}],this.$rules.jsxAttributes=[{token:"meta.tag.punctuation.tag-close.xml",regex:"/?>",onMatch:function(e,t,n){return t==n[0]&&n.shift(),2==e.length&&(n[0]==this.nextState&&n[1]--,(!n[1]||n[1]<0)&&n.splice(0,2)),this.next=n[0]||"start",[{type:this.token,value:e}]},nextState:"jsx"},n,r("jsxAttributes"),{token:"entity.other.attribute-name.xml",regex:e},{token:"keyword.operator.attribute-equals.xml",regex:"="},{token:"text.tag-whitespace.xml",regex:"\\s+"},{token:"string.attribute-value.xml",regex:"'",stateName:"jsx_attr_q",push:[{token:"string.attribute-value.xml",regex:"'",next:"pop"},{include:"reference"},{defaultToken:"string.attribute-value.xml"}]},{token:"string.attribute-value.xml",regex:'"',stateName:"jsx_attr_qq",push:[{token:"string.attribute-value.xml",regex:'"',next:"pop"},{include:"reference"},{defaultToken:"string.attribute-value.xml"}]},t],this.$rules.reference=[{token:"constant.language.escape.reference.xml",regex:"(?:&#[0-9]+;)|(?:&#x[0-9a-fA-F]+;)|(?:&[a-zA-Z0-9_:\\.-]+;)"}]}.call(this)),this.embedRules(i,"doc-",[i.getEndRule("no_regex")]),this.normalizeRules()}var a=e("../lib/oop"),i=e("./doc_comment_highlight_rules").DocCommentHighlightRules,s=e("./text_highlight_rules").TextHighlightRules,g="[a-zA-Z\\$_¡-￿][a-zA-Z\\d\\$_¡-￿]*";a.inherits(o,s),t.JavaScriptHighlightRules=o}),define("ace/mode/matching_brace_outdent",["require","exports","module","ace/range"],function(e,t,n){"use strict";function r(){}var i=e("../range").Range;(function(){this.checkOutdent=function(e,t){return!!/^\s+$/.test(e)&&/^\s*\}/.test(t)},this.autoOutdent=function(e,t){var n=e.getLine(t).match(/^(\s*\})/);if(!n)return 0;var r=n[1].length,o=e.findMatchingBracket({row:t,column:r});if(!o||o.row==t)return 0;var a=this.$getIndent(e.getLine(o.row));e.replace(new i(t,0,t,r-1),a)},this.$getIndent=function(e){return e.match(/^\s*/)[0]}}).call(r.prototype),t.MatchingBraceOutdent=r}),define("ace/mode/folding/cstyle",["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"],function(e,t,n){"use strict";var r=e("../../lib/oop"),u=e("../../range").Range,o=e("./fold_mode").FoldMode,a=t.FoldMode=function(e){e&&(this.foldingStartMarker=new RegExp(this.foldingStartMarker.source.replace(/\|[^|]*?$/,"|"+e.start)),this.foldingStopMarker=new RegExp(this.foldingStopMarker.source.replace(/\|[^|]*?$/,"|"+e.end)))};r.inherits(a,o),function(){this.foldingStartMarker=/([\{\[\(])[^\}\]\)]*$|^\s*(\/\*)/,this.foldingStopMarker=/^[^\[\{\(]*([\}\]\)])|^[\s\*]*(\*\/)/,this.singleLineBlockCommentRe=/^\s*(\/\*).*\*\/\s*$/,this.tripleStarBlockCommentRe=/^\s*(\/\*\*\*).*\*\/\s*$/,this.startRegionRe=/^\s*(\/\*|\/\/)#?region\b/,this._getFoldWidgetBase=this.getFoldWidget,this.getFoldWidget=function(e,t,n){var r=e.getLine(n);if(this.singleLineBlockCommentRe.test(r)&&!this.startRegionRe.test(r)&&!this.tripleStarBlockCommentRe.test(r))return"";var o=this._getFoldWidgetBase(e,t,n);return!o&&this.startRegionRe.test(r)?"start":o},this.getFoldWidgetRange=function(e,t,n,r){var o=e.getLine(n);if(this.startRegionRe.test(o))return this.getCommentRegionBlock(e,o,n);var a=o.match(this.foldingStartMarker);if(a){var i=a.index;if(a[1])return this.openingBracketBlock(e,a[1],n,i);var s=e.getCommentFoldRange(n,i+a[0].length,1);return s&&!s.isMultiLine()&&(r?s=this.getSectionRange(e,n):"all"!=t&&(s=null)),s}if("markbegin"!==t&&(a=o.match(this.foldingStopMarker))){i=a.index+a[0].length;return a[1]?this.closingBracketBlock(e,a[1],n,i):e.getCommentFoldRange(n,i,-1)}},this.getSectionRange=function(e,t){for(var n=e.getLine(t),r=n.search(/\S/),o=t,a=n.length,i=t+=1,s=e.getLength();++t<s;){var g=(n=e.getLine(t)).search(/\S/);if(-1!==g){if(g<r)break;var l=this.getFoldWidgetRange(e,"all",t);if(l){if(l.start.row<=o)break;if(l.isMultiLine())t=l.end.row;else if(r==g)break}i=t}}return new u(o,a,i,e.getLine(i).length)},this.getCommentRegionBlock=function(e,t,n){for(var r=t.search(/\s*$/),o=e.getLength(),a=n,i=/^\s*(?:\/\*|\/\/|--)#?(end)?region\b/,s=1;++n<o;){t=e.getLine(n);var g=i.exec(t);if(g&&(g[1]?s--:s++,!s))break}if(a<n)return new u(a,r,n,t.length)}}.call(a.prototype)}),define("ace/mode/javascript",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/javascript_highlight_rules","ace/mode/matching_brace_outdent","ace/worker/worker_client","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"],function(e,t,n){"use strict";function r(){this.HighlightRules=i,this.$outdent=new s,this.$behaviour=new l,this.foldingRules=new u}var o=e("../lib/oop"),a=e("./text").Mode,i=e("./javascript_highlight_rules").JavaScriptHighlightRules,s=e("./matching_brace_outdent").MatchingBraceOutdent,g=e("../worker/worker_client").WorkerClient,l=e("./behaviour/cstyle").CstyleBehaviour,u=e("./folding/cstyle").FoldMode;o.inherits(r,a),function(){this.lineCommentStart="//",this.blockComment={start:"/*",end:"*/"},this.$quotes={'"':'"',"'":"'","`":"`"},this.getNextLineIndent=function(e,t,n){var r,o=this.$getIndent(t),a=this.getTokenizer().getLineTokens(t,e),i=a.tokens,s=a.state;if(i.length&&"comment"==i[i.length-1].type)return o;if("start"==e||"no_regex"==e)(r=t.match(/^.*(?:\bcase\b.*:|[\{\(\[])\s*$/))&&(o+=n);else if("doc-start"==e){if("start"==s||"no_regex"==s)return"";(r=t.match(/^\s*(\/?)\*/))&&(r[1]&&(o+=" "),o+="* ")}return o},this.checkOutdent=function(e,t,n){return this.$outdent.checkOutdent(t,n)},this.autoOutdent=function(e,t,n){this.$outdent.autoOutdent(t,n)},this.createWorker=function(t){var e=new g(["ace"],"ace/mode/javascript_worker","JavaScriptWorker");return e.attachToDocument(t.getDocument()),e.on("annotate",function(e){t.setAnnotations(e.data)}),e.on("terminate",function(){t.clearAnnotations()}),e},this.$id="ace/mode/javascript",this.snippetFileId="ace/snippets/javascript"}.call(r.prototype),t.Mode=r}),window.require(["ace/mode/javascript"],function(e){"object"==typeof module&&"object"==typeof exports&&module&&(module.exports=e)});define("ace/mode/doc_comment_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/text_highlight_rules"],function(e,t,n){"use strict";var r=e("../lib/oop"),o=e("./text_highlight_rules").TextHighlightRules,i=function(){this.$rules={start:[{token:"comment.doc.tag",regex:"@[\\w\\d_]+"},i.getTagRule(),{defaultToken:"comment.doc",caseInsensitive:!0}]}};r.inherits(i,o),i.getTagRule=function(e){return{token:"comment.doc.tag.storage.type",regex:"\\b(?:TODO|FIXME|XXX|HACK)\\b"}},i.getStartRule=function(e){return{token:"comment.doc",regex:"\\/\\*(?=\\*)",next:e}},i.getEndRule=function(e){return{token:"comment.doc",regex:"\\*\\/",next:e}},t.DocCommentHighlightRules=i}),define("ace/mode/c_cpp_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/doc_comment_highlight_rules","ace/mode/text_highlight_rules"],function(e,t,n){"use strict";function r(){var e=this.$keywords=this.createKeywordMapper({"keyword.control":"break|case|continue|default|do|else|for|goto|if|_Pragma|return|switch|while|catch|operator|try|throw|using","storage.type":"asm|__asm__|auto|bool|_Bool|char|_Complex|double|enum|float|_Imaginary|int|long|short|signed|struct|typedef|union|unsigned|void|class|wchar_t|template|char16_t|char32_t","storage.modifier":"const|extern|register|restrict|static|volatile|inline|private|protected|public|friend|explicit|virtual|export|mutable|typename|constexpr|new|delete|alignas|alignof|decltype|noexcept|thread_local","keyword.operator":"and|and_eq|bitand|bitor|compl|not|not_eq|or|or_eq|typeid|xor|xor_eq|const_cast|dynamic_cast|reinterpret_cast|static_cast|sizeof|namespace","variable.language":"this","constant.language":"NULL|true|false|TRUE|FALSE|nullptr"},"identifier"),t=/\\(?:['"?\\abfnrtv]|[0-7]{1,3}|x[a-fA-F\d]{2}|u[a-fA-F\d]{4}U[a-fA-F\d]{8}|.)/.source,n="%"+/(\d+\$)?/.source+/[#0\- +']*/.source+/[,;:_]?/.source+/((-?\d+)|\*(-?\d+\$)?)?/.source+/(\.((-?\d+)|\*(-?\d+\$)?)?)?/.source+/(hh|h|ll|l|j|t|z|q|L|vh|vl|v|hv|hl)?/.source+/(\[[^"\]]+\]|[diouxXDOUeEfFgGaACcSspn%])/.source;this.$rules={start:[{token:"comment",regex:"//$",next:"start"},{token:"comment",regex:"//",next:"singleLineComment"},i.getStartRule("doc-start"),{token:"comment",regex:"\\/\\*",next:"comment"},{token:"string",regex:"'(?:"+t+"|.)?'"},{token:"string.start",regex:'"',stateName:"qqstring",next:[{token:"string",regex:/\\\s*$/,next:"qqstring"},{token:"constant.language.escape",regex:t},{token:"constant.language.escape",regex:n},{token:"string.end",regex:'"|$',next:"start"},{defaultToken:"string"}]},{token:"string.start",regex:'R"\\(',stateName:"rawString",next:[{token:"string.end",regex:'\\)"',next:"start"},{defaultToken:"string"}]},{token:"constant.numeric",regex:"0[xX][0-9a-fA-F]+(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\\b"},{token:"constant.numeric",regex:"[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?(L|l|UL|ul|u|U|F|f|ll|LL|ull|ULL)?\\b"},{token:"keyword",regex:"#\\s*(?:include|import|pragma|line|define|undef)\\b",next:"directive"},{token:"keyword",regex:"#\\s*(?:endif|if|ifdef|else|elif|ifndef)\\b"},{token:"support.function.C99.c",regex:a},{token:e,regex:"[a-zA-Z_$][a-zA-Z0-9_$]*"},{token:"keyword.operator",regex:/--|\+\+|<<=|>>=|>>>=|<>|&&|\|\||\?:|[*%\/+\-&\^|~!<>=]=?/},{token:"punctuation.operator",regex:"\\?|\\:|\\,|\\;|\\."},{token:"paren.lparen",regex:"[[({]"},{token:"paren.rparen",regex:"[\\])}]"},{token:"text",regex:"\\s+"}],comment:[{token:"comment",regex:"\\*\\/",next:"start"},{defaultToken:"comment"}],singleLineComment:[{token:"comment",regex:/\\$/,next:"singleLineComment"},{token:"comment",regex:/$/,next:"start"},{defaultToken:"comment"}],directive:[{token:"constant.other.multiline",regex:/\\/},{token:"constant.other.multiline",regex:/.*\\/},{token:"constant.other",regex:"\\s*<.+?>",next:"start"},{token:"constant.other",regex:'\\s*["](?:(?:\\\\.)|(?:[^"\\\\]))*?["]',next:"start"},{token:"constant.other",regex:"\\s*['](?:(?:\\\\.)|(?:[^'\\\\]))*?[']",next:"start"},{token:"constant.other",regex:/[^\\\/]+/,next:"start"}]},this.embedRules(i,"doc-",[i.getEndRule("start")]),this.normalizeRules()}var o=e("../lib/oop"),i=e("./doc_comment_highlight_rules").DocCommentHighlightRules,l=e("./text_highlight_rules").TextHighlightRules,a=t.cFunctions="\\b(?:hypot(?:f|l)?|s(?:scanf|ystem|nprintf|ca(?:nf|lb(?:n(?:f|l)?|ln(?:f|l)?))|i(?:n(?:h(?:f|l)?|f|l)?|gn(?:al|bit))|tr(?:s(?:tr|pn)|nc(?:py|at|mp)|c(?:spn|hr|oll|py|at|mp)|to(?:imax|d|u(?:l(?:l)?|max)|k|f|l(?:d|l)?)|error|pbrk|ftime|len|rchr|xfrm)|printf|et(?:jmp|vbuf|locale|buf)|qrt(?:f|l)?|w(?:scanf|printf)|rand)|n(?:e(?:arbyint(?:f|l)?|xt(?:toward(?:f|l)?|after(?:f|l)?))|an(?:f|l)?)|c(?:s(?:in(?:h(?:f|l)?|f|l)?|qrt(?:f|l)?)|cos(?:h(?:f)?|f|l)?|imag(?:f|l)?|t(?:ime|an(?:h(?:f|l)?|f|l)?)|o(?:s(?:h(?:f|l)?|f|l)?|nj(?:f|l)?|pysign(?:f|l)?)|p(?:ow(?:f|l)?|roj(?:f|l)?)|e(?:il(?:f|l)?|xp(?:f|l)?)|l(?:o(?:ck|g(?:f|l)?)|earerr)|a(?:sin(?:h(?:f|l)?|f|l)?|cos(?:h(?:f|l)?|f|l)?|tan(?:h(?:f|l)?|f|l)?|lloc|rg(?:f|l)?|bs(?:f|l)?)|real(?:f|l)?|brt(?:f|l)?)|t(?:ime|o(?:upper|lower)|an(?:h(?:f|l)?|f|l)?|runc(?:f|l)?|gamma(?:f|l)?|mp(?:nam|file))|i(?:s(?:space|n(?:ormal|an)|cntrl|inf|digit|u(?:nordered|pper)|p(?:unct|rint)|finite|w(?:space|c(?:ntrl|type)|digit|upper|p(?:unct|rint)|lower|al(?:num|pha)|graph|xdigit|blank)|l(?:ower|ess(?:equal|greater)?)|al(?:num|pha)|gr(?:eater(?:equal)?|aph)|xdigit|blank)|logb(?:f|l)?|max(?:div|abs))|di(?:v|fftime)|_Exit|unget(?:c|wc)|p(?:ow(?:f|l)?|ut(?:s|c(?:har)?|wc(?:har)?)|error|rintf)|e(?:rf(?:c(?:f|l)?|f|l)?|x(?:it|p(?:2(?:f|l)?|f|l|m1(?:f|l)?)?))|v(?:s(?:scanf|nprintf|canf|printf|w(?:scanf|printf))|printf|f(?:scanf|printf|w(?:scanf|printf))|w(?:scanf|printf)|a_(?:start|copy|end|arg))|qsort|f(?:s(?:canf|e(?:tpos|ek))|close|tell|open|dim(?:f|l)?|p(?:classify|ut(?:s|c|w(?:s|c))|rintf)|e(?:holdexcept|set(?:e(?:nv|xceptflag)|round)|clearexcept|testexcept|of|updateenv|r(?:aiseexcept|ror)|get(?:e(?:nv|xceptflag)|round))|flush|w(?:scanf|ide|printf|rite)|loor(?:f|l)?|abs(?:f|l)?|get(?:s|c|pos|w(?:s|c))|re(?:open|e|ad|xp(?:f|l)?)|m(?:in(?:f|l)?|od(?:f|l)?|a(?:f|l|x(?:f|l)?)?))|l(?:d(?:iv|exp(?:f|l)?)|o(?:ngjmp|cal(?:time|econv)|g(?:1(?:p(?:f|l)?|0(?:f|l)?)|2(?:f|l)?|f|l|b(?:f|l)?)?)|abs|l(?:div|abs|r(?:int(?:f|l)?|ound(?:f|l)?))|r(?:int(?:f|l)?|ound(?:f|l)?)|gamma(?:f|l)?)|w(?:scanf|c(?:s(?:s(?:tr|pn)|nc(?:py|at|mp)|c(?:spn|hr|oll|py|at|mp)|to(?:imax|d|u(?:l(?:l)?|max)|k|f|l(?:d|l)?|mbs)|pbrk|ftime|len|r(?:chr|tombs)|xfrm)|to(?:b|mb)|rtomb)|printf|mem(?:set|c(?:hr|py|mp)|move))|a(?:s(?:sert|ctime|in(?:h(?:f|l)?|f|l)?)|cos(?:h(?:f|l)?|f|l)?|t(?:o(?:i|f|l(?:l)?)|exit|an(?:h(?:f|l)?|2(?:f|l)?|f|l)?)|b(?:s|ort))|g(?:et(?:s|c(?:har)?|env|wc(?:har)?)|mtime)|r(?:int(?:f|l)?|ound(?:f|l)?|e(?:name|alloc|wind|m(?:ove|quo(?:f|l)?|ainder(?:f|l)?))|a(?:nd|ise))|b(?:search|towc)|m(?:odf(?:f|l)?|em(?:set|c(?:hr|py|mp)|move)|ktime|alloc|b(?:s(?:init|towcs|rtowcs)|towc|len|r(?:towc|len))))\\b";o.inherits(r,l),t.c_cppHighlightRules=r}),define("ace/mode/matching_brace_outdent",["require","exports","module","ace/range"],function(e,t,n){"use strict";function r(){}var l=e("../range").Range;(function(){this.checkOutdent=function(e,t){return!!/^\s+$/.test(e)&&/^\s*\}/.test(t)},this.autoOutdent=function(e,t){var n=e.getLine(t).match(/^(\s*\})/);if(!n)return 0;var r=n[1].length,o=e.findMatchingBracket({row:t,column:r});if(!o||o.row==t)return 0;var i=this.$getIndent(e.getLine(o.row));e.replace(new l(t,0,t,r-1),i)},this.$getIndent=function(e){return e.match(/^\s*/)[0]}}).call(r.prototype),t.MatchingBraceOutdent=r}),define("ace/mode/folding/cstyle",["require","exports","module","ace/lib/oop","ace/range","ace/mode/folding/fold_mode"],function(e,t,n){"use strict";var r=e("../../lib/oop"),g=e("../../range").Range,o=e("./fold_mode").FoldMode,i=t.FoldMode=function(e){e&&(this.foldingStartMarker=new RegExp(this.foldingStartMarker.source.replace(/\|[^|]*?$/,"|"+e.start)),this.foldingStopMarker=new RegExp(this.foldingStopMarker.source.replace(/\|[^|]*?$/,"|"+e.end)))};r.inherits(i,o),function(){this.foldingStartMarker=/([\{\[\(])[^\}\]\)]*$|^\s*(\/\*)/,this.foldingStopMarker=/^[^\[\{\(]*([\}\]\)])|^[\s\*]*(\*\/)/,this.singleLineBlockCommentRe=/^\s*(\/\*).*\*\/\s*$/,this.tripleStarBlockCommentRe=/^\s*(\/\*\*\*).*\*\/\s*$/,this.startRegionRe=/^\s*(\/\*|\/\/)#?region\b/,this._getFoldWidgetBase=this.getFoldWidget,this.getFoldWidget=function(e,t,n){var r=e.getLine(n);if(this.singleLineBlockCommentRe.test(r)&&!this.startRegionRe.test(r)&&!this.tripleStarBlockCommentRe.test(r))return"";var o=this._getFoldWidgetBase(e,t,n);return!o&&this.startRegionRe.test(r)?"start":o},this.getFoldWidgetRange=function(e,t,n,r){var o=e.getLine(n);if(this.startRegionRe.test(o))return this.getCommentRegionBlock(e,o,n);var i=o.match(this.foldingStartMarker);if(i){var l=i.index;if(i[1])return this.openingBracketBlock(e,i[1],n,l);var a=e.getCommentFoldRange(n,l+i[0].length,1);return a&&!a.isMultiLine()&&(r?a=this.getSectionRange(e,n):"all"!=t&&(a=null)),a}if("markbegin"!==t&&(i=o.match(this.foldingStopMarker))){l=i.index+i[0].length;return i[1]?this.closingBracketBlock(e,i[1],n,l):e.getCommentFoldRange(n,l,-1)}},this.getSectionRange=function(e,t){for(var n=e.getLine(t),r=n.search(/\S/),o=t,i=n.length,l=t+=1,a=e.getLength();++t<a;){var s=(n=e.getLine(t)).search(/\S/);if(-1!==s){if(s<r)break;var c=this.getFoldWidgetRange(e,"all",t);if(c){if(c.start.row<=o)break;if(c.isMultiLine())t=c.end.row;else if(r==s)break}l=t}}return new g(o,i,l,e.getLine(l).length)},this.getCommentRegionBlock=function(e,t,n){for(var r=t.search(/\s*$/),o=e.getLength(),i=n,l=/^\s*(?:\/\*|\/\/|--)#?(end)?region\b/,a=1;++n<o;){t=e.getLine(n);var s=l.exec(t);if(s&&(s[1]?a--:a++,!a))break}if(i<n)return new g(i,r,n,t.length)}}.call(i.prototype)}),define("ace/mode/c_cpp",["require","exports","module","ace/lib/oop","ace/mode/text","ace/mode/c_cpp_highlight_rules","ace/mode/matching_brace_outdent","ace/range","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"],function(e,t,n){"use strict";function r(){this.HighlightRules=l,this.$outdent=new a,this.$behaviour=new s,this.foldingRules=new c}var o=e("../lib/oop"),i=e("./text").Mode,l=e("./c_cpp_highlight_rules").c_cppHighlightRules,a=e("./matching_brace_outdent").MatchingBraceOutdent,s=(e("../range").Range,e("./behaviour/cstyle").CstyleBehaviour),c=e("./folding/cstyle").FoldMode;o.inherits(r,i),function(){this.lineCommentStart="//",this.blockComment={start:"/*",end:"*/"},this.getNextLineIndent=function(e,t,n){var r,o=this.$getIndent(t),i=this.getTokenizer().getLineTokens(t,e),l=i.tokens,a=i.state;if(l.length&&"comment"==l[l.length-1].type)return o;if("start"==e)(r=t.match(/^.*[\{\(\[]\s*$/))&&(o+=n);else if("doc-start"==e){if("start"==a)return"";(r=t.match(/^\s*(\/?)\*/))&&(r[1]&&(o+=" "),o+="* ")}return o},this.checkOutdent=function(e,t,n){return this.$outdent.checkOutdent(t,n)},this.autoOutdent=function(e,t,n){this.$outdent.autoOutdent(t,n)},this.$id="ace/mode/c_cpp",this.snippetFileId="ace/snippets/c_cpp"}.call(r.prototype),t.Mode=r}),define("ace/mode/glsl_highlight_rules",["require","exports","module","ace/lib/oop","ace/mode/c_cpp_highlight_rules"],function(e,t,n){"use strict";function r(){var t=this.createKeywordMapper({"variable.language":"this",keyword:"version|attribute|const|uniform|varying|break|continue|do|for|while|if|else|in|out|inout|float|int|void|bool|true|false|lowp|mediump|highp|precision|invariant|discard|return|mat2|mat3|mat4|vec2|vec3|vec4|ivec2|ivec3|ivec4|bvec2|bvec3|bvec4|sampler2D|samplerCube|struct","constant.language":"radians|degrees|sin|cos|tan|asin|acos|atan|pow|exp|log|exp2|log2|sqrt|inversesqrt|abs|sign|floor|ceil|fract|mod|min|max|clamp|mix|step|smoothstep|length|distance|dot|cross|normalize|faceforward|reflect|refract|matrixCompMult|transpose|inverselessThan|lessThanEqual|greaterThan|greaterThanEqual|equal|notEqual|any|all|not|dFdx|dFdy|fwidth|texture2D|texture2DProj|texture2DLod|texture2DProjLod|textureCube|textureCubeLod|texelFetch|textureSize|gl_MaxVertexAttribs|gl_MaxVertexUniformVectors|gl_MaxVaryingVectors|gl_MaxVertexTextureImageUnits|gl_MaxCombinedTextureImageUnits|gl_MaxTextureImageUnits|gl_MaxFragmentUniformVectors|gl_MaxDrawBuffers|gl_DepthRangeParameters|gl_DepthRange|gl_Position|gl_PointSize|gl_FragCoord|gl_FrontFacing|gl_PointCoord|gl_FragColor|gl_FragData|FragColor|gl_FragDepth"},"identifier");this.$rules=(new i).$rules,this.$rules.start.forEach(function(e){"function"==typeof e.token&&(e.token=t)})}var o=e("../lib/oop"),i=e("./c_cpp_highlight_rules").c_cppHighlightRules;o.inherits(r,i),t.glslHighlightRules=r}),define("ace/mode/glsl",["require","exports","module","ace/lib/oop","ace/mode/c_cpp","ace/mode/glsl_highlight_rules","ace/mode/matching_brace_outdent","ace/range","ace/mode/behaviour/cstyle","ace/mode/folding/cstyle"],function(e,t,n){"use strict";function r(){this.HighlightRules=l,this.$outdent=new a,this.$behaviour=new s,this.foldingRules=new c}var o=e("../lib/oop"),i=e("./c_cpp").Mode,l=e("./glsl_highlight_rules").glslHighlightRules,a=e("./matching_brace_outdent").MatchingBraceOutdent,s=(e("../range").Range,e("./behaviour/cstyle").CstyleBehaviour),c=e("./folding/cstyle").FoldMode;o.inherits(r,i),function(){this.$id="ace/mode/glsl"}.call(r.prototype),t.Mode=r}),window.require(["ace/mode/glsl"],function(e){"object"==typeof module&&"object"==typeof exports&&module&&(module.exports=e)});
+</script>
+
+<script id='application-source' type='text'>
+
+function Engine(){
+
+let windowWidth=window.innerWidth,windowHeight=window.innerHeight,resizingElement,selectedElement,painai
+leftArea.style.left='0px'
+leftArea.style.right=windowWidth*0.75+'px'
+leftArea.style.top='0px'
+leftArea.style.bottom=windowHeight*0.4+'px'
+previewArea.style.left=windowWidth*0.25+'px'
+previewArea.style.right=windowWidth*0.25+'px'
+previewArea.style.top='0px'
+previewArea.style.bottom=windowHeight*0.4+'px'
+rightArea.style.left=windowWidth*0.75+'px'
+rightArea.style.right='0px'
+rightArea.style.top='0px'
+rightArea.style.bottom=windowHeight*0.4+'px'
+bottomArea.style.left='0px'
+bottomArea.style.right='0px'
+bottomArea.style.top=(windowWidth*0.6+1)+'px'
+bottomArea.style.bottom='0px'
+mainProgramDIV.style.height=(windowHeight*0.6-37)+'px'
+
+document.addEventListener('mousemove',(e)=>{
+    if(e.clientX>leftArea.getBoundingClientRect().right-7&&e.clientX<leftArea.getBoundingClientRect().right&&e.clientY<leftArea.getBoundingClientRect().bottom||resizingElement===leftArea){
+        document.body.style.cursor='ew-resize'
+        if(resizingElement===leftArea){
+            let num=windowWidth-D.constrain(e.clientX,7,previewArea.getBoundingClientRect().right-15)-3
+            leftArea.style.right=num+'px'
+            previewArea.style.left=(windowWidth-num)+'px'
+            mainProgramDIV.width=windowWidth-(Number(previewArea.style.right.replace('px',''))+Number(previewArea.style.left.replace('px','')))
+        }
+    } else if(e.clientX<rightArea.getBoundingClientRect().left+7&&e.clientX>rightArea.getBoundingClientRect().left&&e.clientY<rightArea.getBoundingClientRect().bottom||resizingElement===rightArea){
+        document.body.style.cursor='ew-resize'
+        if(resizingElement===rightArea){
+            let num=D.constrain(e.clientX,previewArea.getBoundingClientRect().left+15,windowWidth-7)-3
+            rightArea.style.left=num+'px'
+            previewArea.style.right=(windowWidth-num)+'px'
+            mainProgramDIV.width=windowWidth-(Number(previewArea.style.right.replace('px',''))+Number(previewArea.style.left.replace('px','')))
+        }
+    } else if(e.clientY<bottomArea.getBoundingClientRect().top+7&&e.clientY>bottomArea.getBoundingClientRect().top||resizingElement===bottomArea){
+        document.body.style.cursor='ns-resize'
+        if(resizingElement===bottomArea){
+            let num=D.constrain(e.clientY,57,windowHeight-10)-3
+            bottomArea.style.top=(num)+'px'
+            leftArea.style.bottom=(windowHeight-num)+'px'
+            previewArea.style.bottom=(windowHeight-num)+'px'
+            mainProgramDIV.style.height=(num-37)+'px'
+            mainProgramDIV.height=(num-37)
+            rightArea.style.bottom=(windowHeight-num)+'px'
+            codeEditor.setOptions({maxLines:(windowHeight-Number(bottomArea.style.top.replace('px',''))-75)*0.0715})
+        }
+    } else {
+        document.body.style.cursor='default'
+    }
+})
+
+mainProgramDIV.height=Number(bottomArea.style.top.replace('px',''))-30
+mainProgramDIV.width=windowWidth-(Number(previewArea.style.right.replace('px',''))+Number(previewArea.style.left.replace('px','')))
+
+leftArea.addEventListener('mousedown',(e)=>{
+    if(resizingElement) return
+    if(e.clientX>leftArea.getBoundingClientRect().right-7) resizingElement=leftArea
+})
+leftArea.addEventListener('mouseup',(e)=>{
+    resizingElement=false
+})
+previewArea.addEventListener('mousedown',(e)=>{
+    if(resizingElement) return
+})
+previewArea.addEventListener('mouseup',(e)=>{
+    resizingElement=false
+})
+rightArea.addEventListener('mousedown',(e)=>{
+    if(resizingElement) return
+    if(e.clientX<rightArea.getBoundingClientRect().left+7) resizingElement=rightArea
+})
+rightArea.addEventListener('mouseup',(e)=>{
+    resizingElement=false
+})
+bottomArea.addEventListener('mousedown',(e)=>{
+    if(resizingElement) return
+    if(e.clientY<bottomArea.getBoundingClientRect().top+7) resizingElement=bottomArea
+})
+bottomArea.addEventListener('mouseup',(e)=>{
+    resizingElement=false
+})
+
+document.onwheel=(e)=>{e.preventDefault()}
+
+let codeEditor=ace.edit('editorCode'),connectedScript
+codeEditor.setTheme('ace/theme/monokai')
+codeEditor.setOptions({maxLines:0})
+codeEditor.session.setUseWrapMode(true)
+
+let defaultElementTemplate={
+    material:{type:'material',specularExponent:300,specularIntensity:0.75,extraDataFormat:'[]',vertexData:{position:true,normal:true,color:true,uv:true},texture:'[]',normalMap:'',instancedDataFormat:'[]',recieveShadows:true,recieveShadowsFrom:'[]'},
+    script_object:{type:'script',lang:'js',code:
+`Export.OnCreate = function(This, Engine){
+    
+    
+}
+
+Export.OnUpdate = function(This, Engine){
+    
+    
+}`},
+    script_texture:{type:'script',lang:'js',code:
+`Export.GetTexture = function(ctx, Engine){
+    
+    
+}`},
+    script_material:{type:'script',lang:'glsl',code:
+`@ VertexShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    HARDCODED_VERTEX_ATTRIBUTES
+    
+    HARDCODED_INSTANCED_ATTRIBUTES
+    
+    uniform mat4 modelMatrix;
+    uniform mat4 viewMatrix;
+    
+    out vec3 pixPos;
+    out vec3 pixNormal;
+    out vec3 pixColor;
+    out vec2 pixUV;
+    
+    void main(){
+        
+        vec4 pos=modelMatrix*vec4(vertPos,1);
+        
+        pixPos=pos.xyz;
+        pixNormal=mat3(modelMatrix)*vertNormal;
+        pixColor=vertColor;
+        pixUV=vertUV;
+        
+        gl_Position=viewMatrix*pos;
+    }
+}
+
+@ FragmentShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec3 pixPos;
+    in vec3 pixNormal;
+    in vec3 pixColor;
+    in vec2 pixUV;
+        
+    uniform vec3 camPos;
+    
+    HARDCODED_UNIFORMS
+    
+    out vec4 FragColor;
+    
+    vec3 applyAmbientLight(vec3 pix,vec3 col,float inst){
+        return pix*col*inst;
+    }
+    vec3 applyDirectionalLight(vec3 pix,vec3 normal,vec3 dir,vec3 col,float inst,float diffuseRemapScale,float diffuseRemapAdd){
+        float diffuse=max(dot(-dir,normal)*diffuseRemapScale+diffuseRemapAdd,0.0);
+        vec3 toLight=dir;
+        float specular=pow(max(dot(normalize(-dir+normalize(camPos-pixPos)),normal),0.0),HARDCODED_SPECULAR_EXPONENT);
+        return (diffuse*pix+specular*HARDCODED_SPECULAR_INTENSITY)*inst*col;
+    }
+    vec3 applyPointLight(vec3 toLight,float x,vec3 pix,vec3 normal,vec3 dir,vec3 col,float inst,float innerCone,float outerCone,float diffuseRemapScale,float diffuseRemapAdd){
+        float diffuse=max(dot(toLight,normal)*diffuseRemapScale+diffuseRemapAdd,0.0);
+        float specular=pow(max(dot(normalize(toLight+normalize(camPos-pixPos)),normal),0.0),HARDCODED_SPECULAR_EXPONENT);
+        
+        float conal=smoothstep(outerCone,innerCone,dot(toLight,-dir));
+        return (diffuse*pix+specular*HARDCODED_SPECULAR_INTENSITY)*conal*inst*col/x;
+    }
+    float applyShadow(sampler2D tex,mat4 mat,vec3 pos,vec3 normal,int blurSamples,float blurRadius,float inst,float biasScale,float biasAdd){
+        
+        vec4 proj=mat*vec4(pixPos,1);
+        proj.xyz/=proj.w;
+        proj.xyz=proj.xyz*0.5+0.5;
+        
+        float currentDepth=proj.z-max((0.5-dot(normalize(pos-pixPos),normal))*biasScale,biasAdd);
+        float shadow=1.0;
+        
+        for(int y=-blurSamples;y<=blurSamples;y++){
+            for(int x=-blurSamples;x<=blurSamples;x++){
+                float projDepth=texture(tex,proj.xy+vec2(x,y)*blurRadius).r;
+                if(projDepth<=currentDepth)
+                    shadow-=inst;
+            }
+        }
+        if(proj.z>1.0||proj.x<0.0||proj.x>1.0||proj.y<0.0||proj.y>1.0) shadow=1.0;
+        return shadow;
+    }
+    
+    void main(){
+        
+        float shadow=1.0;
+        vec2 uv=pixUV;
+        vec3 normal=normalize(pixNormal);
+        vec3 color=vec3(0);
+        vec3 pix=pixColor;
+        
+        HARDCODED_SHADOW_COMPUTATIONS
+        
+        HARDCODED_NORMAL_MAP_COMPUTATIONS
+        
+        HARDCODED_STATIC_LIGHT_COMPUTATIONS
+        HARDCODED_DYNAMIC_LIGHT_COMPUTATIONS
+        
+        FragColor=vec4(color*shadow,1.0);
+    }
+}`},
+    script_pp:{type:'script',lang:'glsl',code:
+`@ VertexShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec2 vertPos;
+    
+    out vec2 pixUV;
+    
+    void main(){
+        
+        pixUV=vertPos*0.5;
+        gl_Position=vec4(vertPos,0,1);
+    }
+}
+
+@ FragmentShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    uniform sampler2D input_0;
+    
+    in vec2 pixUV;
+    
+    out vec4 FragColor;
+    
+    void main(){
+        
+        vec4 color=texture(input_0,pix);
+        
+        FragColor=color;
+    }
+}`},
+    script_txt:{type:'script',lang:'txt',code:`\n\n\n\n\n`},
+
+    renderTarget:{type:'renderTarget',width:1,height:1,resType:'scale'},
+    texture:{type:'texture',width:128,height:128,filtering:'NEAREST',wrapping:'REPEAT',internalFormat:'RGBA',format:'RGBA',memoryType:'UNSIGNED_BYTE',mipmapping:true},
+    block:{type:'block',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true},
+    camera:{type:'camera',clearColor:[0,0,0,1],transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,projectionType:'perspective',FOV:70,near:0.01,far:1000},
+    shadower:{type:'shadower',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,projectionType:'perspective',FOV:50,near:1,far:25,computeShadowMap:true,width:512,height:512,blurSamples:1,blurRadius:0.001,intensity:0.35,biasScale:0.1,biasAdd:0.001},
+    mesh:{type:'mesh',material:'DefaultMaterial',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,render:true,wireframe:false,castShadows:true,castShadowsTo:'[]',defaultData:'[]',physics:{usePhysics:false,type:'DYNAMIC',mass:1,collisionGroup:0,collisionMask:'[]',fixedRotation:false}},
+    geometry:{type:'geometry',render:true,data:{type:'sphere',x:0,y:0,z:0,w:1,h:1,l:1,radius:0.5,radius2:0.5,height:1,detail:1,r:1,g:1,b:1,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},autoUVBounds:true,physics:{usePhysics:true,position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]}},
+    light:{type:'light',lightType:'point',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,dynamic:false,intensity:1,color:[1,1,1],attenuationPolynomial:'X*X',innerCone:-1,outerCone:-1,diffuseRemapScale:1,diffuseRemapAdd:0,illuminates:true,illuminatesMaterials:'[]'},
+    UpdatePhysics:{type:'UpdatePhysics'},
+    ComputeTransformations:{type:'ComputeTransformations'},
+    RenderShadowMaps:{type:'RenderShadowMaps'},
+    MainRender:{type:'MainRender',outputs:'[]',framebufferDepthBuffer:true},
+    PostProcessor:{type:'PostProcessor',inputs:'[]',outputs:'[]',depthBuffer:false}
+    
+}
+
+let history=[],programData={_pipeline:[
+        {
+            type:'UpdatePhysics'
+        },{
+            type:'ComputeTransformations'
+        },{
+            type:'RenderShadowMaps'
+        },{
+            type:'MainRender',
+            outputs:'[mainPass,mainPass2]',
+            depthBuffer:true,
+        },{
+            type:'PostProcessor',
+            script:'bloomFilter',
+            inputs:'[mainPass]',
+            outputs:'[filteredPass]',
+        },{
+            type:'PostProcessor',
+            script:'bloomHorBlur',
+            inputs:'[filteredPass]',
+            outputs:'[horBlurPass0]',
+        },{
+            type:'PostProcessor',
+            script:'bloomVerBlur',
+            inputs:'[horBlurPass0]',
+            outputs:'[verBlurPass0]',
+        },{
+            type:'PostProcessor',
+            script:'bloomHorBlur',
+            inputs:'[verBlurPass0]',
+            outputs:'[horBlurPass1]',
+        },{
+            type:'PostProcessor',
+            script:'bloomVerBlur',
+            inputs:'[horBlurPass1]',
+            outputs:'[verBlurPass1]',
+        },{
+            type:'PostProcessor',
+            script:'bloomHorBlur',
+            inputs:'[verBlurPass1]',
+            outputs:'[horBlurPass2]',
+        },{
+            type:'PostProcessor',
+            script:'bloomVerBlur',
+            inputs:'[horBlurPass2]',
+            outputs:'[verBlurPass2]',
+        },{
+            type:'PostProcessor',
+            script:'bloomHorBlur',
+            inputs:'[verBlurPass2]',
+            outputs:'[horBlurPass3]',
+        },{
+            type:'PostProcessor',
+            script:'bloomVerBlur',
+            inputs:'[horBlurPass3]',
+            outputs:'[verBlurPass3]',
+        },{
+            type:'PostProcessor',
+            script:'bloomHorBlur',
+            inputs:'[verBlurPass3]',
+            outputs:'[horBlurPass4]',
+        },{
+            type:'PostProcessor',
+            script:'bloomVerBlur',
+            inputs:'[horBlurPass4]',
+            outputs:'[verBlurPass4]',
+        },{
+            type:'PostProcessor',
+            script:'bloomHorBlur',
+            inputs:'[verBlurPass4]',
+            outputs:'[horBlurPass5]',
+        },{
+            type:'PostProcessor',
+            script:'bloomVerBlur',
+            inputs:'[horBlurPass5]',
+            outputs:'[verBlurPass5]',
+        },{
+            type:'PostProcessor',
+            script:'bloomHorBlur',
+            inputs:'[verBlurPass5]',
+            outputs:'[horBlurPass6]',
+        },{
+            type:'PostProcessor',
+            script:'bloomVerBlur',
+            inputs:'[horBlurPass6]',
+            outputs:'[verBlurPass6]',
+        },{
+            type:'PostProcessor',
+            script:'bloomCombine',
+            inputs:'[verBlurPass0,verBlurPass1,verBlurPass2,verBlurPass3,verBlurPass4,verBlurPass5,verBlurPass6,mainPass]',
+            outputs:'[]',
+        }
+    ],
+    _settings:{
+        contextAttributes:{
+            antialias:true,
+            preserveDrawingBuffer:true,
+            depth:true,
+            stencil:false,
+            alpha:true,
+            premultipledAlpha:true
+        },
+        timeMultiplier:1,
+        minDeltaTime:0,
+        maxDeltaTime:0.25,
+        gravity:[0,-9.81,0],
+        quatNormalizeSkip:1,
+        quatNormalizeFast:true,
+        defaultFriction:0.35,
+        defaultRestitution:0.05,
+        dynamicLightsInfo:{
+            position:true,
+            rotation:false,
+            intensity:false,
+            color:true,
+            innerCone:false,
+            outerCone:false,
+            diffuseRemapScale:false,
+            diffuseRemapAdd:false
+        },
+        textureDrawingCanvasWidth:1024,textureDrawingCanvasHeight:1024,
+        vertexDataAttributesInShadowMappingProgram:1
+    },
+    _assets:{
+        objFile:{
+            type:'script',lang:'txt',code:`newmtl Candy Mix_d581d7f3-5225-42a0-9654-13d9e174d7c4
+Kd 1.000 1.000 0.812
+d 1.000
+newmtl Jasper 6_481abcbf-88f5-4d94-bff7-d3b82b9838c7
+Kd 0.510 0.510 0.510
+d 1.000
+newmtl Jasper 7_ba40568d-176d-4971-9813-2cb15a733f62
+Kd 0.510 0.510 0.510
+d 1.000
+newmtl Jasper 5_b3e37035-fa52-45e7-b827-3568baec206c
+Kd 0.510 0.510 0.510
+d 1.000
+
+o 000_Tube
+g Tube
+usemtl Candy Mix_d581d7f3-5225-42a0-9654-13d9e174d7c4
+v 73.427 334.925 0.000
+v 44.549 334.925 -59.966
+v 51.844 334.925 -69.114
+v 85.127 334.925 0.000
+v 58.742 458.225 0.000
+v 41.475 458.225 -55.291
+v 35.639 458.225 -47.973
+v 68.102 458.225 0.000
+v -20.340 334.925 -74.777
+v -22.944 334.925 -86.184
+v -18.355 458.225 -68.947
+v -16.272 458.225 -59.822
+v -72.377 334.925 -33.279
+v -82.919 334.925 -38.355
+v -66.335 458.225 -30.684
+v -57.902 458.225 -26.623
+v -72.377 334.925 33.279
+v -82.919 334.925 38.355
+v -66.335 458.225 30.684
+v -57.902 458.225 26.623
+v -20.340 334.925 74.777
+v -22.944 334.925 86.184
+v -18.355 458.225 68.947
+v -16.272 458.225 59.822
+v 44.549 334.925 59.966
+v 51.844 334.925 69.114
+v 41.475 458.225 55.291
+v 35.639 458.225 47.973
+vt 0.93382 0.50000
+vt 0.77048 0.83918
+vt 0.81174 0.89092
+vt 1.00000 0.50000
+vt 0.93382 0.50000
+vt 0.81174 0.89092
+vt 0.77048 0.83918
+vt 1.00000 0.50000
+vt 0.40347 0.92295
+vt 0.38874 0.98746
+vt 0.38874 0.98746
+vt 0.40347 0.92295
+vt 0.10914 0.68823
+vt 0.04952 0.71694
+vt 0.04952 0.71694
+vt 0.10914 0.68823
+vt 0.10914 0.31177
+vt 0.04952 0.28306
+vt 0.04952 0.28306
+vt 0.10914 0.31177
+vt 0.40347 0.07705
+vt 0.38874 0.01254
+vt 0.38874 0.01254
+vt 0.40347 0.07705
+vt 0.77048 0.16082
+vt 0.81174 0.10908
+vt 0.81174 0.10908
+vt 0.77048 0.16082
+vt 0.00000 0.00000
+vt 0.14286 0.00000
+vt 0.14286 1.00000
+vt 0.00000 1.00000
+vt 0.00000 0.00000
+vt 0.14286 1.00000
+vt 0.14286 0.00000
+vt 0.00000 1.00000
+vt 0.28571 0.00000
+vt 0.28571 1.00000
+vt 0.28571 1.00000
+vt 0.28571 0.00000
+vt 0.42857 0.00000
+vt 0.42857 1.00000
+vt 0.42857 1.00000
+vt 0.42857 0.00000
+vt 0.57143 0.00000
+vt 0.57143 1.00000
+vt 0.57143 1.00000
+vt 0.57143 0.00000
+vt 0.71429 0.00000
+vt 0.71429 1.00000
+vt 0.71429 1.00000
+vt 0.71429 0.00000
+vt 0.85714 0.00000
+vt 0.85714 1.00000
+vt 0.85714 1.00000
+vt 0.85714 0.00000
+vt 1.00000 0.00000
+vt 1.00000 1.00000
+vt 1.00000 1.00000
+vt 1.00000 0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 1.00000 0.00000 0.00000
+vn 0.62349 0.00000 -0.78183
+vn 0.62349 0.00000 -0.78183
+vn 1.00000 0.00000 0.00000
+vn -1.00000 0.00000 0.00000
+vn -0.62349 -0.00000 0.78183
+vn -0.62349 -0.00000 0.78183
+vn -1.00000 0.00000 0.00000
+vn 0.62349 0.00000 -0.78183
+vn -0.22252 0.00000 -0.97493
+vn -0.22252 0.00000 -0.97493
+vn 0.62349 0.00000 -0.78183
+vn -0.62349 -0.00000 0.78183
+vn 0.22252 -0.00000 0.97493
+vn 0.22252 -0.00000 0.97493
+vn -0.62349 -0.00000 0.78183
+vn -0.22252 0.00000 -0.97493
+vn -0.90097 0.00000 -0.43388
+vn -0.90097 0.00000 -0.43388
+vn -0.22252 0.00000 -0.97493
+vn 0.22252 -0.00000 0.97493
+vn 0.90097 -0.00000 0.43388
+vn 0.90097 -0.00000 0.43388
+vn 0.22252 -0.00000 0.97493
+vn -0.90097 0.00000 -0.43388
+vn -0.90097 -0.00000 0.43388
+vn -0.90097 -0.00000 0.43388
+vn -0.90097 0.00000 -0.43388
+vn 0.90097 -0.00000 0.43388
+vn 0.90097 0.00000 -0.43388
+vn 0.90097 0.00000 -0.43388
+vn 0.90097 -0.00000 0.43388
+vn -0.90097 -0.00000 0.43388
+vn -0.22252 -0.00000 0.97493
+vn -0.22252 -0.00000 0.97493
+vn -0.90097 -0.00000 0.43388
+vn 0.90097 0.00000 -0.43388
+vn 0.22252 0.00000 -0.97493
+vn 0.22252 0.00000 -0.97493
+vn 0.90097 0.00000 -0.43388
+vn -0.22252 -0.00000 0.97493
+vn 0.62349 -0.00000 0.78183
+vn 0.62349 -0.00000 0.78183
+vn -0.22252 -0.00000 0.97493
+vn 0.22252 0.00000 -0.97493
+vn -0.62349 0.00000 -0.78183
+vn -0.62349 0.00000 -0.78183
+vn 0.22252 0.00000 -0.97493
+vn 0.62349 -0.00000 0.78183
+vn 1.00000 -0.00000 0.00000
+vn 1.00000 -0.00000 0.00000
+vn 0.62349 -0.00000 0.78183
+vn -0.62349 0.00000 -0.78183
+vn -1.00000 0.00000 -0.00000
+vn -1.00000 0.00000 -0.00000
+vn -0.62349 0.00000 -0.78183
+f 1/1/1 2/2/2 3/3/3 4/4/4 
+f 6/6/6 7/7/7 5/5/5 8/8/8 
+f 2/2/9 9/9/10 10/10/11 3/3/12 
+f 11/11/14 12/12/15 7/7/13 6/6/16 
+f 9/9/17 13/13/18 14/14/19 10/10/20 
+f 15/15/22 16/16/23 12/12/21 11/11/24 
+f 13/13/25 17/17/26 18/18/27 14/14/28 
+f 19/19/30 20/20/31 16/16/29 15/15/32 
+f 17/17/33 21/21/34 22/22/35 18/18/36 
+f 23/23/38 24/24/39 20/20/37 19/19/40 
+f 21/21/41 25/25/42 26/26/43 22/22/44 
+f 27/27/46 28/28/47 24/24/45 23/23/48 
+f 25/25/49 1/1/50 4/4/51 26/26/52 
+f 8/8/54 5/5/55 28/28/53 27/27/56 
+f 4/29/57 3/30/58 6/31/59 8/32/60 
+f 7/34/62 2/35/63 1/33/61 5/36/64 
+f 3/30/65 10/37/66 11/38/67 6/31/68 
+f 12/39/70 9/40/71 2/35/69 7/34/72 
+f 10/37/73 14/41/74 15/42/75 11/38/76 
+f 16/43/78 13/44/79 9/40/77 12/39/80 
+f 14/41/81 18/45/82 19/46/83 15/42/84 
+f 20/47/86 17/48/87 13/44/85 16/43/88 
+f 18/45/89 22/49/90 23/50/91 19/46/92 
+f 24/51/94 21/52/95 17/48/93 20/47/96 
+f 22/49/97 26/53/98 27/54/99 23/50/100 
+f 28/55/102 25/56/103 21/52/101 24/51/104 
+f 26/53/105 4/57/106 8/58/107 27/54/108 
+f 5/59/110 1/60/111 25/56/109 28/55/112 
+o 001_Cylinder_1
+g Cylinder_1
+usemtl Jasper 6_481abcbf-88f5-4d94-bff7-d3b82b9838c7
+v 9.000 59.793 0.000
+v 2.781 59.793 -8.560
+v 2.781 419.093 -8.560
+v 9.000 419.093 0.000
+v -7.281 59.793 -5.290
+v -7.281 419.093 -5.290
+v -7.281 59.793 5.290
+v -7.281 419.093 5.290
+v 2.781 59.793 8.560
+v 2.781 419.093 8.560
+v 0.000 59.793 0.000
+v 0.000 419.093 0.000
+vt 0.00000 0.00000
+vt 0.20000 0.00000
+vt 0.20000 1.00000
+vt 0.00000 1.00000
+vt 0.40000 0.00000
+vt 0.40000 1.00000
+vt 0.60000 0.00000
+vt 0.60000 1.00000
+vt 0.80000 0.00000
+vt 0.80000 1.00000
+vt 1.00000 0.00000
+vt 1.00000 1.00000
+vt 0.50000 0.50000
+vt 0.65451 0.97553
+vt 1.00000 0.50000
+vt 0.09549 0.79389
+vt 0.09549 0.20611
+vt 0.65451 0.02447
+vt 0.50000 0.50000
+vt 1.00000 0.50000
+vt 0.65451 0.97553
+vt 0.09549 0.79389
+vt 0.09549 0.20611
+vt 0.65451 0.02447
+vn 1.00000 0.00000 0.00000
+vn 0.30902 0.00000 -0.95106
+vn 0.30902 0.00000 -0.95106
+vn 1.00000 0.00000 0.00000
+vn 0.30902 0.00000 -0.95106
+vn -0.80902 0.00000 -0.58779
+vn -0.80902 0.00000 -0.58779
+vn 0.30902 0.00000 -0.95106
+vn -0.80902 0.00000 -0.58779
+vn -0.80902 -0.00000 0.58779
+vn -0.80902 -0.00000 0.58779
+vn -0.80902 0.00000 -0.58779
+vn -0.80902 -0.00000 0.58779
+vn 0.30902 -0.00000 0.95106
+vn 0.30902 -0.00000 0.95106
+vn -0.80902 -0.00000 0.58779
+vn 0.30902 -0.00000 0.95106
+vn 1.00000 -0.00000 0.00000
+vn 1.00000 -0.00000 0.00000
+vn 0.30902 -0.00000 0.95106
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+f 29/61/113 30/62/114 31/63/115 32/64/116 
+f 30/62/117 33/65/118 34/66/119 31/63/120 
+f 33/65/121 35/67/122 36/68/123 34/66/124 
+f 35/67/125 37/69/126 38/70/127 36/68/128 
+f 37/69/129 29/71/130 32/72/131 38/70/132 
+f 39/73/133 30/74/134 29/75/135 
+f 39/73/136 33/76/137 30/74/138 
+f 39/73/139 35/77/140 33/76/141 
+f 39/73/142 37/78/143 35/77/144 
+f 39/73/145 29/75/146 37/78/147 
+f 40/79/148 32/80/149 31/81/150 
+f 40/79/151 31/81/152 34/82/153 
+f 40/79/154 34/82/155 36/83/156 
+f 40/79/157 36/83/158 38/84/159 
+f 40/79/160 38/84/161 32/80/162 
+o 002_Cylinder_2
+g Cylinder_2
+usemtl Jasper 7_ba40568d-176d-4971-9813-2cb15a733f62
+v 51.053 0.000 -51.053
+v -51.053 0.000 -51.053
+v -51.053 13.900 -51.053
+v 51.053 13.900 -51.053
+v -51.053 -0.000 51.053
+v -51.053 13.900 51.053
+v 51.053 -0.000 51.053
+v 51.053 13.900 51.053
+v 0.000 0.000 0.000
+v -0.000 13.900 0.000
+vt 0.00000 0.00000
+vt 0.25000 0.00000
+vt 0.25000 1.00000
+vt 0.00000 1.00000
+vt 0.50000 0.00000
+vt 0.50000 1.00000
+vt 0.75000 0.00000
+vt 0.75000 1.00000
+vt 1.00000 0.00000
+vt 1.00000 1.00000
+vt 0.50000 0.50000
+vt 0.50000 1.00000
+vt 1.00000 0.50000
+vt 0.00000 0.50000
+vt 0.50000 0.00000
+vt 0.50000 0.50000
+vt 1.00000 0.50000
+vt 0.50000 1.00000
+vt 0.00000 0.50000
+vt 0.50000 0.00000
+vn 0.70711 0.00000 -0.70711
+vn -0.70711 0.00000 -0.70711
+vn -0.70711 0.00000 -0.70711
+vn 0.70711 0.00000 -0.70711
+vn -0.70711 0.00000 -0.70711
+vn -0.70711 -0.00000 0.70711
+vn -0.70711 -0.00000 0.70711
+vn -0.70711 0.00000 -0.70711
+vn -0.70711 -0.00000 0.70711
+vn 0.70711 -0.00000 0.70711
+vn 0.70711 -0.00000 0.70711
+vn -0.70711 -0.00000 0.70711
+vn 0.70711 -0.00000 0.70711
+vn 0.70711 0.00000 -0.70711
+vn 0.70711 0.00000 -0.70711
+vn 0.70711 -0.00000 0.70711
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+f 41/85/163 42/86/164 43/87/165 44/88/166 
+f 42/86/167 45/89/168 46/90/169 43/87/170 
+f 45/89/171 47/91/172 48/92/173 46/90/174 
+f 47/91/175 41/93/176 44/94/177 48/92/178 
+f 49/95/179 42/96/180 41/97/181 
+f 49/95/182 45/98/183 42/96/184 
+f 49/95/185 47/99/186 45/98/187 
+f 49/95/188 41/97/189 47/99/190 
+f 50/100/191 44/101/192 43/102/193 
+f 50/100/194 43/102/195 46/103/196 
+f 50/100/197 46/103/198 48/104/199 
+f 50/100/200 48/104/201 44/101/202 
+o 003_Cylinder
+g Cylinder
+usemtl Jasper 5_b3e37035-fa52-45e7-b827-3568baec206c
+v 13.223 1.377 0.000
+v 4.086 1.377 -12.576
+v 4.512 4.700 -13.885
+v 14.600 4.700 0.000
+v -10.698 1.377 -7.773
+v -11.812 4.700 -8.582
+v -10.698 1.377 7.773
+v -11.812 4.700 8.582
+v 4.086 1.377 12.576
+v 4.512 4.700 13.885
+v 4.512 260.300 -13.885
+v 14.600 260.300 0.000
+v -11.812 260.300 -8.582
+v -11.812 260.300 8.582
+v 4.512 260.300 13.885
+v 4.086 263.623 -12.576
+v 13.223 263.623 0.000
+v -10.698 263.623 -7.773
+v -10.698 263.623 7.773
+v 4.086 263.623 12.576
+v 0.000 0.000 0.000
+v 3.059 0.000 -9.415
+v 9.900 0.000 0.000
+v -8.009 0.000 -5.819
+v -8.009 -0.000 5.819
+v 3.059 -0.000 9.415
+v 0.000 265.000 0.000
+v 9.900 265.000 0.000
+v 3.059 265.000 -9.415
+v -8.009 265.000 -5.819
+v -8.009 265.000 5.819
+v 3.059 265.000 9.415
+vt 0.00000 0.00000
+vt 0.20000 0.00000
+vt 0.20000 0.01404
+vt 0.00000 0.01404
+vt 0.40000 0.00000
+vt 0.40000 0.01404
+vt 0.60000 0.00000
+vt 0.60000 0.01404
+vt 0.80000 0.00000
+vt 0.80000 0.01404
+vt 1.00000 0.00000
+vt 1.00000 0.01404
+vt 0.20000 0.98596
+vt 0.00000 0.98596
+vt 0.40000 0.98596
+vt 0.60000 0.98596
+vt 0.80000 0.98596
+vt 1.00000 0.98596
+vt 0.20000 1.00000
+vt 0.00000 1.00000
+vt 0.40000 1.00000
+vt 0.60000 1.00000
+vt 0.80000 1.00000
+vt 1.00000 1.00000
+vt 0.50000 0.50000
+vt 0.61254 0.84638
+vt 0.86420 0.50000
+vt 0.20535 0.71407
+vt 0.20535 0.28593
+vt 0.61254 0.15362
+vt 0.50000 0.50000
+vt 0.86420 0.50000
+vt 0.61254 0.84638
+vt 0.20535 0.71407
+vt 0.20535 0.28593
+vt 0.61254 0.15362
+vt 0.65451 0.97553
+vt 1.00000 0.50000
+vt 0.65451 0.97553
+vt 1.00000 0.50000
+vt 0.09549 0.79389
+vt 0.09549 0.79389
+vt 0.09549 0.20611
+vt 0.09549 0.20611
+vt 0.65451 0.02447
+vt 0.65451 0.02447
+vn 0.70711 -0.70711 -0.00000
+vn 0.21851 -0.70711 -0.67250
+vn 0.30902 0.00000 -0.95106
+vn 1.00000 0.00000 0.00000
+vn 0.21851 -0.70711 -0.67250
+vn -0.57206 -0.70711 -0.41563
+vn -0.80902 0.00000 -0.58779
+vn 0.30902 0.00000 -0.95106
+vn -0.57206 -0.70711 -0.41563
+vn -0.57206 -0.70711 0.41563
+vn -0.80902 -0.00000 0.58779
+vn -0.80902 0.00000 -0.58779
+vn -0.57206 -0.70711 0.41563
+vn 0.21851 -0.70711 0.67250
+vn 0.30902 -0.00000 0.95106
+vn -0.80902 -0.00000 0.58779
+vn 0.21851 -0.70711 0.67250
+vn 0.70711 -0.70711 0.00000
+vn 1.00000 -0.00000 0.00000
+vn 0.30902 -0.00000 0.95106
+vn 1.00000 0.00000 0.00000
+vn 0.30902 0.00000 -0.95106
+vn 0.30902 0.00000 -0.95106
+vn 1.00000 0.00000 0.00000
+vn 0.30902 0.00000 -0.95106
+vn -0.80902 0.00000 -0.58779
+vn -0.80902 0.00000 -0.58779
+vn 0.30902 0.00000 -0.95106
+vn -0.80902 0.00000 -0.58779
+vn -0.80902 -0.00000 0.58779
+vn -0.80902 -0.00000 0.58779
+vn -0.80902 0.00000 -0.58779
+vn -0.80902 -0.00000 0.58779
+vn 0.30902 -0.00000 0.95106
+vn 0.30902 -0.00000 0.95106
+vn -0.80902 -0.00000 0.58779
+vn 0.30902 -0.00000 0.95106
+vn 1.00000 -0.00000 0.00000
+vn 1.00000 -0.00000 0.00000
+vn 0.30902 -0.00000 0.95106
+vn 1.00000 0.00000 0.00000
+vn 0.30902 0.00000 -0.95106
+vn 0.21851 0.70711 -0.67250
+vn 0.70711 0.70711 0.00000
+vn 0.30902 0.00000 -0.95106
+vn -0.80902 0.00000 -0.58779
+vn -0.57206 0.70711 -0.41563
+vn 0.21851 0.70711 -0.67250
+vn -0.80902 0.00000 -0.58779
+vn -0.80902 -0.00000 0.58779
+vn -0.57206 0.70711 0.41563
+vn -0.57206 0.70711 -0.41563
+vn -0.80902 -0.00000 0.58779
+vn 0.30902 -0.00000 0.95106
+vn 0.21851 0.70711 0.67250
+vn -0.57206 0.70711 0.41563
+vn 0.30902 -0.00000 0.95106
+vn 1.00000 -0.00000 0.00000
+vn 0.70711 0.70711 0.00000
+vn 0.21851 0.70711 0.67250
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 1.00000 0.00000
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.21851 -0.70711 -0.67250
+vn 0.70711 -0.70711 -0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.21851 0.70711 -0.67250
+vn -0.00000 1.00000 0.00000
+vn 0.70711 0.70711 0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.57206 -0.70711 -0.41563
+vn 0.21851 -0.70711 -0.67250
+vn -0.00000 1.00000 0.00000
+vn -0.57206 0.70711 -0.41563
+vn 0.00000 1.00000 0.00000
+vn 0.21851 0.70711 -0.67250
+vn 0.00000 -1.00000 -0.00000
+vn 0.00000 -1.00000 -0.00000
+vn -0.57206 -0.70711 0.41563
+vn -0.57206 -0.70711 -0.41563
+vn 0.00000 1.00000 0.00000
+vn -0.57206 0.70711 0.41563
+vn 0.00000 1.00000 0.00000
+vn -0.57206 0.70711 -0.41563
+vn 0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.21851 -0.70711 0.67250
+vn -0.57206 -0.70711 0.41563
+vn 0.00000 1.00000 0.00000
+vn 0.21851 0.70711 0.67250
+vn -0.00000 1.00000 0.00000
+vn -0.57206 0.70711 0.41563
+vn -0.00000 -1.00000 -0.00000
+vn -0.00000 -1.00000 -0.00000
+vn 0.70711 -0.70711 0.00000
+vn 0.21851 -0.70711 0.67250
+vn -0.00000 1.00000 0.00000
+vn 0.70711 0.70711 0.00000
+vn -0.00000 1.00000 0.00000
+vn 0.21851 0.70711 0.67250
+f 51/105/203 52/106/204 53/107/205 54/108/206 
+f 52/106/207 55/109/208 56/110/209 53/107/210 
+f 55/109/211 57/111/212 58/112/213 56/110/214 
+f 57/111/215 59/113/216 60/114/217 58/112/218 
+f 59/113/219 51/115/220 54/116/221 60/114/222 
+f 54/108/223 53/107/224 61/117/225 62/118/226 
+f 53/107/227 56/110/228 63/119/229 61/117/230 
+f 56/110/231 58/112/232 64/120/233 63/119/234 
+f 58/112/235 60/114/236 65/121/237 64/120/238 
+f 60/114/239 54/116/240 62/122/241 65/121/242 
+f 62/118/243 61/117/244 66/123/245 67/124/246 
+f 61/117/247 63/119/248 68/125/249 66/123/250 
+f 63/119/251 64/120/252 69/126/253 68/125/254 
+f 64/120/255 65/121/256 70/127/257 69/126/258 
+f 65/121/259 62/122/260 67/128/261 70/127/262 
+f 71/129/263 72/130/264 73/131/265 
+f 71/129/266 74/132/267 72/130/268 
+f 71/129/269 75/133/270 74/132/271 
+f 71/129/272 76/134/273 75/133/274 
+f 71/129/275 73/131/276 76/134/277 
+f 77/135/278 78/136/279 79/137/280 
+f 77/135/281 79/137/282 80/138/283 
+f 77/135/284 80/138/285 81/139/286 
+f 77/135/287 81/139/288 82/140/289 
+f 77/135/290 82/140/291 78/136/292 
+f 73/131/293 72/130/294 52/141/295 51/142/296 
+f 66/143/298 79/137/299 78/136/297 67/144/300 
+f 72/130/301 74/132/302 55/145/303 52/141/304 
+f 68/146/306 80/138/307 79/137/305 66/143/308 
+f 74/132/309 75/133/310 57/147/311 55/145/312 
+f 69/148/314 81/139/315 80/138/313 68/146/316 
+f 75/133/317 76/134/318 59/149/319 57/147/320 
+f 70/150/322 82/140/323 81/139/321 69/148/324 
+f 76/134/325 73/131/326 51/142/327 59/149/328 
+f 67/144/330 78/136/331 82/140/329 70/150/332`
+        },
+        mainPass:{
+            type:'renderTarget',
+            width:1,height:1,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },mainPass2:{
+            type:'renderTarget',
+            width:1,height:1,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },filteredPass:{
+            type:'renderTarget',
+            width:0.5,height:0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },horBlurPass0:{
+            type:'renderTarget',
+            width:0.5,height:0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },verBlurPass0:{
+            type:'renderTarget',
+            width:0.5,height:0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },horBlurPass1:{
+            type:'renderTarget',
+            width:0.5*0.5,height:0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },verBlurPass1:{
+            type:'renderTarget',
+            width:0.5*0.5,height:0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },horBlurPass2:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5,height:0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },verBlurPass2:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5,height:0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },horBlurPass3:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5*0.5,height:0.5*0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },verBlurPass3:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5*0.5,height:0.5*0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },horBlurPass4:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5*0.5*0.5,height:0.5*0.5*0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },verBlurPass4:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5*0.5*0.5,height:0.5*0.5*0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },horBlurPass5:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5*0.5*0.5*0.5,height:0.5*0.5*0.5*0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },verBlurPass5:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5*0.5*0.5*0.5,height:0.5*0.5*0.5*0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },horBlurPass6:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5*0.5*0.5*0.5*0.5,height:0.5*0.5*0.5*0.5*0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },verBlurPass6:{
+            type:'renderTarget',
+            width:0.5*0.5*0.5*0.5*0.5*0.5*0.5,height:0.5*0.5*0.5*0.5*0.5*0.5*0.5,resType:'scale',
+            filtering:'LINEAR',
+            wrapping:'CLAMP_TO_EDGE',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+        },
+        amazingTexture:{
+            type:'texture',
+            width:10,height:10,
+            script:'BadTextureGraphic',
+            filtering:'NEAREST',
+            wrapping:'REPEAT',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+            mipmapping:true,
+        },
+        noiceNormalMap:{
+            type:'texture',
+            width:128,height:128,
+            script:'noiceNormalMapGraphic',
+            filtering:'LINEAR',
+            wrapping:'REPEAT',
+            internalFormat:'RGBA',
+            format:'RGBA',
+            memoryType:'UNSIGNED_BYTE',
+            mipmapping:true,
+        },
+        BasicMat:{
+            type:'material',script:'basicShader',
+            specularExponent:300,
+            specularIntensity:0.8,
+            extraDataFormat:'[]',
+            vertexData:{
+                position:true,
+                normal:true,
+                color:true,
+                uv:true
+            },
+            texture:'[amazingTexture]',
+            normalMap:'noiceNormalMap',
+            instancedDataFormat:'[]',
+            recieveShadows:true,
+            recieveShadowsFrom:'[]'
+        },
+        InstancedMat:{
+            type:'material',script:'instancedShader',
+            specularExponent:300,
+            specularIntensity:0.8,
+            extraDataFormat:'[]',
+            vertexData:{
+                position:true,
+                normal:true,
+                color:true,
+                uv:true
+            },
+            texture:'[]',
+            normalMap:'',
+            instancedDataFormat:'[3]',
+            recieveShadows:true,
+            recieveShadowsFrom:'[]'
+        },
+        EmissiveMat:{
+            type:'material',
+            script:'emissiveMaterialShader',
+            specularExponent:0,
+            specularIntensity:0,
+            extraDataFormat:'[1]',
+            vertexData:{
+                position:true,
+                normal:true,
+                color:true,
+                uv:true
+            },
+            texture:'[]',
+            normalMap:'',
+            instancedDataFormat:'[]',
+            recieveShadows:false,
+            recieveShadowsFrom:'[]'
+        },
+        BadTextureGraphic:{
+            type:'script',lang:'js',code:
+`Export.GetTexture = function(ctx, Engine){
+    let data=[]
+    
+    for(let x=0;x<10;x++)
+        for(let y=0;y<10;y++)
+            data.push(0,0,0,(x+y)%2?30:0)
+    
+    return new Uint8Array(data) 
+}`
+        },
+        noiceNormalMapGraphic:{
+            type:'script',lang:'js',code:
+`Export.GetTexture = function(ctx, Engine){
+    let data=new Uint8Array(128*128*4)
+    
+    for(let i=(128*128<<2)-4;i-=4;){
+        
+        let x=(i>>2)%128,y=(i>>2)*0.0078125,
+        nx=(Engine.Noise2D((x-1)*0.075,y*0.075)-Engine.Noise2D((x+1)*0.075,y*0.075)),
+        ny=(Engine.Noise2D(x*0.075,(y-1)*0.075)-Engine.Noise2D(x*0.075,(y+1)*0.075)),
+        nz=0.03,
+        mag=255/Math.sqrt(nx*nx+ny*ny+nz*nz)
+        
+        data[i]=nx*mag*0.5+127.5
+        data[i+1]=ny*mag*0.5+127.5
+        data[i+2]=nz*mag*0.5+127.5
+        data[i+3]=255
+    }
+    
+    return data 
+}`
+        },
+        MeshInstancing:{
+            type:'script',lang:'js',code:
+`Export.OnCreate = function(This, Engine){
+    
+    D.SetInstances(This.mesh,[-1,0,-2.5,1,0,-2.5])
+}
+
+Export.OnUpdate = function(This, Engine){
+    
+}`
+        },
+        CoolLighting:{
+            type:'script',lang:'js',code:
+`Export.OnCreate = function(This, Engine){
+    
+}
+
+Export.OnUpdate = function(This, Engine){
+    
+    let ang=Engine.time*2,rad=Math.cos(Engine.time*1.25+0.2)*2.5
+    
+    This.transform.position[0]=Math.sin(ang)*rad
+    This.transform.position[2]=Math.cos(ang)*rad
+    This.color[0]=Math.max(Math.sin(ang)+0.5,0)
+    This.color[1]=Math.max(Math.sin(ang+D.THIRD_PI)+0.5,0)
+    This.color[2]=Math.max(Math.sin(ang+D.THIRD_PI*2)+0.5,0)
+}`
+        },
+        rotateCamera:{
+            type:'script',lang:'js',code:
+`Export.OnCreate = function(This, Engine){
+    
+    Engine.allObjects.The={
+        name:'The',
+        type:'mesh',material:'BasicMat',transform:{position:[0,9,0],rotation:[0,0,40],scale:[1,1,1]},
+        computeTransformations:true,
+        render:true,
+        wireframe:false,
+        castShadows:true,
+        castShadowsTo:'[]',
+        defaultData:'[]',
+        physics:{
+            usePhysics:true,
+            type:'DYNAMIC',
+            mass:1,
+            collisionGroup:0,
+            collisionMask:'[]',
+            fixedRotation:false,
+        },
+        children:{
+            _FallingThing:{
+                type:'geometry',
+                render:true,
+                data:{type:'box',x:0,y:0,z:0,w:0.7,h:0.7,l:0.7,radius:0.5,radius2:0.5,height:1,detail:10,r:1,g:0,b:0,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},
+                autoUVBounds:false,
+                physics:{
+                    usePhysics:true,
+                    position:[0,0,0],
+                    rotation:[0,0,0],
+                    scale:[1,1,1],
+                }
+            },
+        }
+    }
+    Engine.InitalizeMesh(Engine.allObjects.The)
+    Engine.InitalizeTransform(Engine.allObjects.The)
+    
+    This._yaw=0
+    This._pitch=0
+    
+    Engine.canvas.onmousedown=()=>Engine.canvas.requestPointerLock()
+    
+    Engine.canvas.onmousemove=(e)=>{
+        
+        This._yaw-=e.movementX*0.2
+        This._pitch=D.constrain(This._pitch-e.movementY*0.2,-90,90)
+        
+        This.transform.rotation=quat.fromEuler(This.transform.rotation,This._pitch,This._yaw,0)
+        
+    }
+    
+    Engine.canvas.onwheel=(e)=>{
+        
+        e.preventDefault()
+        Engine.camera.transform.position[2]=D.constrain(Engine.camera.transform.position[2]+e.deltaY*0.01,0,100)
+    }
+}
+
+Export.OnUpdate = function(This, Engine){
+    
+    
+    
+}`
+        },
+        bloomFilter:{
+            type:'script',lang:'glsl',code:
+`@ VertexShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec2 vertPos;
+    out vec2 pixUV;
+    
+    void main(){
+        pixUV=vertPos*0.5+0.5;
+        gl_Position=vec4(vertPos,0,1);
+    }
+}
+
+@ FragmentShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec2 pixUV;
+    uniform sampler2D input_0;
+    out vec4 FragColor;
+    
+    void main(){
+        
+        vec4 c=texture(input_0,pixUV);
+        FragColor=vec4(c.rgb*c.a,c.a);
+    }
+}`
+        },
+        bloomHorBlur:{
+            type:'script',lang:'glsl',code:
+`@ VertexShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec2 vertPos;
+    out vec2 pixUV;
+    
+    void main(){
+        pixUV=vertPos*0.5+0.5;
+        gl_Position=vec4(vertPos,0,1);
+    }
+}
+
+@ FragmentShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec2 pixUV;
+    uniform sampler2D input_0;
+    out vec4 FragColor;
+    
+    void main(){
+        
+        vec4 c=vec4(0);
+        
+        for(float i=-2.0;i<=2.0;i++)
+            c+=texture(input_0,pixUV+vec2(i/D_WIDTH,0));
+        FragColor=vec4(c*0.2);
+    }
+}`
+        },
+        bloomVerBlur:{
+            type:'script',lang:'glsl',code:
+`@ VertexShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec2 vertPos;
+    out vec2 pixUV;
+    
+    void main(){
+        pixUV=vertPos*0.5+0.5;
+        gl_Position=vec4(vertPos,0,1);
+    }
+}
+
+@ FragmentShader {
+    
+    #version 300 es
+    precision mediump float;
+    precision mediump sampler2D;
+    
+    in vec2 pixUV;
+    uniform sampler2D input_0;
+    out vec4 FragColor;
+    
+    void main(){
+        
+        vec4 c=vec4(0);
+        
+        for(float i=-2.0;i<=2.0;i++)
+            c+=texture(input_0,pixUV+vec2(0,i/D_WIDTH));
+        FragColor=vec4(c*0.2);
+    }
+}`
+        },
+        bloomCombine:{
+            type:'script',lang:'glsl',code:
+`@ VertexShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec2 vertPos;
+    out vec2 pixUV;
+    
+    void main(){
+        pixUV=vertPos*0.5+0.5;
+        gl_Position=vec4(vertPos,0,1);
+    }
+}
+
+@ FragmentShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec2 pixUV;
+    uniform sampler2D input_0;
+    uniform sampler2D input_1;
+    uniform sampler2D input_2;
+    uniform sampler2D input_3;
+    uniform sampler2D input_4;
+    uniform sampler2D input_5;
+    uniform sampler2D input_6;
+    uniform sampler2D input_7;
+    out vec4 FragColor;
+    
+    void main(){
+        
+        vec4 bloom=texture(input_0,pixUV)+texture(input_1,pixUV)+texture(input_2,pixUV)+texture(input_3,pixUV)+texture(input_4,pixUV)+texture(input_5,pixUV)+texture(input_6,pixUV);
+        
+        FragColor=vec4(bloom.rgb+bloom.a+texture(input_7,pixUV).rgb,1);
+    }
+}`
+        },
+        emissiveMaterialShader:{
+            type:'script',lang:'glsl',code:
+`@ VertexShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    HARDCODED_VERTEX_ATTRIBUTES
+    
+    uniform mat4 modelMatrix;
+    uniform mat4 viewMatrix;
+    
+    out vec3 pixPos;
+    out vec3 pixNormal;
+    out vec3 pixColor;
+    out vec2 pixUV;
+    
+    out float emissiveness;
+    
+    void main(){
+        
+        vec4 pos=modelMatrix*vec4(vertPos,1);
+        
+        pixPos=pos.xyz;
+        pixNormal=mat3(modelMatrix)*vertNormal;
+        pixColor=vertColor;
+        pixUV=vertUV;
+        
+        emissiveness=vertData_0;
+        
+        gl_Position=viewMatrix*pos;
+    }
+}
+
+@ FragmentShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec3 pixPos;
+    in vec3 pixNormal;
+    in vec3 pixColor;
+    in vec2 pixUV;
+    
+    in float emissiveness;
+    
+    uniform vec3 camPos;
+    
+    HARDCODED_UNIFORMS
+    
+    layout(location=0)out vec4 FragColor;
+    layout(location=1)out vec4 FragColor2;
+    
+    void main(){
+        
+        FragColor=vec4(pixColor,emissiveness);
+        // FragColor2=vec4(1.0-pixColor,emissiveness);
+    }
+}`
+        },
+        instancedShader:{
+            type:'script',lang:'glsl',code:
+`@ VertexShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    HARDCODED_VERTEX_ATTRIBUTES
+    
+    HARDCODED_INSTANCED_ATTRIBUTES
+    
+    uniform mat4 modelMatrix;
+    uniform mat4 viewMatrix;
+    
+    out vec3 pixPos;
+    out vec3 pixNormal;
+    out vec3 pixColor;
+    out vec2 pixUV;
+    
+    void main(){
+        
+        vec4 pos=modelMatrix*vec4(vertPos+instanceData_0,1);
+        
+        pixPos=pos.xyz;
+        pixNormal=mat3(modelMatrix)*vertNormal;
+        pixColor=vertColor;
+        pixUV=vertUV;
+        
+        gl_Position=viewMatrix*pos;
+    }
+}
+
+@ FragmentShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec3 pixPos;
+    in vec3 pixNormal;
+    in vec3 pixColor;
+    in vec2 pixUV;
+        
+    uniform vec3 camPos;
+    
+    HARDCODED_UNIFORMS
+    
+    layout(location=0)out vec4 FragColor;
+    layout(location=1)out vec4 FragColor2;
+    
+    vec3 applyAmbientLight(vec3 pix,vec3 col,float inst){
+        return pix*col*inst;
+    }
+    vec3 applyDirectionalLight(vec3 pix,vec3 normal,vec3 dir,vec3 col,float inst,float diffuseRemapScale,float diffuseRemapAdd){
+        float diffuse=max(dot(-dir,normal)*diffuseRemapScale+diffuseRemapAdd,0.0);
+        vec3 toLight=dir;
+        float specular=pow(max(dot(normalize(-dir+normalize(camPos-pixPos)),normal),0.0),HARDCODED_SPECULAR_EXPONENT);
+        return (diffuse*pix+specular*HARDCODED_SPECULAR_INTENSITY)*inst*col;
+    }
+    vec3 applyPointLight(vec3 toLight,float x,vec3 pix,vec3 normal,vec3 dir,vec3 col,float inst,float innerCone,float outerCone,float diffuseRemapScale,float diffuseRemapAdd){
+        float diffuse=max(dot(toLight,normal)*diffuseRemapScale+diffuseRemapAdd,0.0);
+        float specular=pow(max(dot(normalize(toLight+normalize(camPos-pixPos)),normal),0.0),HARDCODED_SPECULAR_EXPONENT);
+        
+        float conal=smoothstep(outerCone,innerCone,dot(toLight,-dir));
+        return (diffuse*pix+specular*HARDCODED_SPECULAR_INTENSITY)*conal*inst*col/x;
+    }
+    float applyShadow(sampler2D tex,mat4 mat,vec3 pos,vec3 normal,int blurSamples,float blurRadius,float inst,float biasScale,float biasAdd){
+        
+        vec4 proj=mat*vec4(pixPos,1);
+        proj.xyz/=proj.w;
+        proj.xyz=proj.xyz*0.5+0.5;
+        
+        float currentDepth=proj.z-max((0.5-dot(normalize(pos-pixPos),normal))*biasScale,biasAdd);
+        float shadow=1.0;
+        
+        for(int y=-blurSamples;y<=blurSamples;y++){
+            for(int x=-blurSamples;x<=blurSamples;x++){
+                float projDepth=texture(tex,proj.xy+vec2(x,y)*blurRadius).r;
+                if(projDepth<=currentDepth)
+                    shadow-=inst;
+            }
+        }
+        if(proj.z>1.0||proj.x<0.0||proj.x>1.0||proj.y<0.0||proj.y>1.0) shadow=1.0;
+        return shadow;
+    }
+    
+    void main(){
+        
+        float shadow=1.0;
+        vec2 uv=pixUV;
+        vec3 normal=normalize(pixNormal);
+        vec3 color=vec3(0);
+        vec3 pix=pixColor;
+        
+        HARDCODED_SHADOW_COMPUTATIONS
+        
+        HARDCODED_NORMAL_MAP_COMPUTATIONS
+        
+        HARDCODED_STATIC_LIGHT_COMPUTATIONS
+        HARDCODED_DYNAMIC_LIGHT_COMPUTATIONS
+        
+        FragColor=vec4(color*shadow,0.0);
+        FragColor2=vec4(1.0-(color*shadow),0.0);
+    }
+}`
+        },
+        basicShader:{
+            type:'script',lang:'glsl',code:
+`@ VertexShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    HARDCODED_VERTEX_ATTRIBUTES
+    
+    HARDCODED_INSTANCED_ATTRIBUTES
+    
+    uniform mat4 modelMatrix;
+    uniform mat4 viewMatrix;
+    
+    out vec3 pixPos;
+    out vec3 pixNormal;
+    out vec3 pixColor;
+    out vec2 pixUV;
+    
+    void main(){
+        
+        vec4 pos=modelMatrix*vec4(vertPos,1);
+        
+        pixPos=pos.xyz;
+        pixNormal=mat3(modelMatrix)*vertNormal;
+        pixColor=vertColor;
+        pixUV=vertUV;
+        
+        gl_Position=viewMatrix*pos;
+    }
+}
+
+@ FragmentShader {
+    
+    #version 300 es
+    precision mediump float;
+    
+    in vec3 pixPos;
+    in vec3 pixNormal;
+    in vec3 pixColor;
+    in vec2 pixUV;
+        
+    uniform vec3 camPos;
+    
+    HARDCODED_UNIFORMS
+    
+    layout(location=0)out vec4 FragColor;
+    layout(location=1)out vec4 FragColor2;
+    
+    vec3 applyAmbientLight(vec3 pix,vec3 col,float inst){
+        return pix*col*inst;
+    }
+    vec3 applyDirectionalLight(vec3 pix,vec3 normal,vec3 dir,vec3 col,float inst,float diffuseRemapScale,float diffuseRemapAdd){
+        float diffuse=max(dot(-dir,normal)*diffuseRemapScale+diffuseRemapAdd,0.0);
+        vec3 toLight=dir;
+        float specular=pow(max(dot(normalize(-dir+normalize(camPos-pixPos)),normal),0.0),HARDCODED_SPECULAR_EXPONENT);
+        return (diffuse*pix+specular*HARDCODED_SPECULAR_INTENSITY)*inst*col;
+    }
+    vec3 applyPointLight(vec3 toLight,float x,vec3 pix,vec3 normal,vec3 dir,vec3 col,float inst,float innerCone,float outerCone,float diffuseRemapScale,float diffuseRemapAdd){
+        float diffuse=max(dot(toLight,normal)*diffuseRemapScale+diffuseRemapAdd,0.0);
+        float specular=pow(max(dot(normalize(toLight+normalize(camPos-pixPos)),normal),0.0),HARDCODED_SPECULAR_EXPONENT);
+        
+        float conal=smoothstep(outerCone,innerCone,dot(toLight,-dir));
+        return (diffuse*pix+specular*HARDCODED_SPECULAR_INTENSITY)*conal*inst*col/x;
+    }
+    float applyShadow(sampler2D tex,mat4 mat,vec3 pos,vec3 normal,int blurSamples,float blurRadius,float inst,float biasScale,float biasAdd){
+        
+        vec4 proj=mat*vec4(pixPos,1);
+        proj.xyz/=proj.w;
+        proj.xyz=proj.xyz*0.5+0.5;
+        
+        float currentDepth=proj.z-max((0.5-dot(normalize(pos-pixPos),normal))*biasScale,biasAdd);
+        float shadow=1.0;
+        
+        for(int y=-blurSamples;y<=blurSamples;y++){
+            for(int x=-blurSamples;x<=blurSamples;x++){
+                float projDepth=texture(tex,proj.xy+vec2(x,y)*blurRadius).r;
+                if(projDepth<=currentDepth)
+                    shadow-=inst;
+            }
+        }
+        if(proj.z>1.0||proj.x<0.0||proj.x>1.0||proj.y<0.0||proj.y>1.0) shadow=1.0;
+        return shadow;
+    }
+    
+    void main(){
+        
+        float shadow=1.0;
+        vec2 uv=pixUV;
+        vec3 normal=normalize(pixNormal);
+        vec3 color=vec3(0);
+        vec3 pix=pixColor;
+        
+        vec4 sam=texture(albedoTexture_0,uv);
+        pix=mix(pix,sam.rgb,sam.a);
+        
+        HARDCODED_SHADOW_COMPUTATIONS
+        
+        HARDCODED_NORMAL_MAP_COMPUTATIONS
+        
+        HARDCODED_STATIC_LIGHT_COMPUTATIONS
+        HARDCODED_DYNAMIC_LIGHT_COMPUTATIONS
+        
+        FragColor=vec4(color*shadow,0.0);
+        FragColor2=vec4(1.0-(color*shadow),0.0);
+    }
+}`
+        },
+    },
+        
+    _hierarchy:{
+        CameraContainer:{
+            type:'block',script:'rotateCamera',
+            transform:{position:[0,1,0],rotation:[-45,0,0],scale:[1,1,1]},
+            computeTransformations:true,
+            children:{
+                Camera:{
+                    type:'camera',
+                    clearColor:[0,0,0,0],
+                    transform:{position:[0,0,5],rotation:[0,0,0],scale:[1,1,1]},
+                    computeTransformations:true,
+                    projectionType:'perspective',FOV:60,near:0.01,far:1000,
+                },
+            }
+        },
+        Shadower:{
+            type:'shadower',
+            transform:{position:[0,5,5],rotation:[-45,0,0],scale:[1,1,1]},
+            computeTransformations:false,
+            projectionType:'perspective',FOV:50,near:1,far:10,
+            computeShadowMap:true,
+            width:512,height:512,
+            blurSamples:1,blurRadius:0.001,intensity:0.35,
+            biasScale:0.1,biasAdd:0.001
+        },
+        InstancedThing:{
+            type:'mesh',material:'InstancedMat',script:'MeshInstancing',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},
+            computeTransformations:true,
+            render:true,
+            wireframe:false,
+            castShadows:true,
+            castShadowsTo:'[]',
+            defaultData:'[]',
+            physics:{
+                usePhysics:false,
+                type:'DYNAMIC',
+                mass:1,
+                collisionGroup:0,
+                collisionMask:'[]',
+                fixedRotation:false,
+            },
+            children:{
+                A_Thing:{
+                    type:'geometry',
+                    render:true,
+                    data:{type:'obj',x:0,y:0,z:0,w:0.7,h:0.7,l:0.7,radius:0.5,radius2:0.5,height:1,detail:1,r:1,g:0,b:1,rx:0,ry:0,rz:0,sx:0.005,sy:0.005,sz:0.005,obj:'objFile',textureMapping:D.DTMPING_(),data:'[]'},
+                    autoUVBounds:false,
+                    physics:{
+                        usePhysics:true,
+                        position:[0,0,0],
+                        rotation:[0,0,0],
+                        scale:[1,1,1],
+                    }
+                },
+            }
+        },
+        Mesh:{
+            type:'mesh',material:'BasicMat',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},
+            computeTransformations:false,
+            render:true,
+            wireframe:false,
+            castShadows:true,
+            castShadowsTo:'[]',
+            defaultData:'[]',
+            physics:{
+                usePhysics:true,
+                type:'STATIC',
+                mass:0,
+                collisionGroup:0,
+                collisionMask:'[]',
+                fixedRotation:false,
+            },
+            children:{
+                Platform:{
+                    type:'geometry',render:true,
+                    data:{type:'box',x:0,y:-0.5,z:0,w:8,h:1,l:8,radius:0.5,radius2:0.5,height:1,detail:10,r:1,g:1,b:1,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},
+                    autoUVBounds:false,
+                    physics:{
+                        usePhysics:true,
+                        position:[0,0,0],
+                        rotation:[0,0,0],
+                        scale:[1,1,1]
+                    }
+                },
+                Cube:{
+                    type:'geometry',render:true,
+                    data:{type:'box',x:-1.5,y:0.5,z:1,w:1,h:1,l:1,radius:0.5,radius2:0.5,height:1,detail:10,r:0.1,g:1,b:0.4,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},
+                    autoUVBounds:false,
+                    physics:{
+                        usePhysics:false,
+                        position:[0,0,0],
+                        rotation:[0,0,0],
+                        scale:[1,1,1]
+                    }
+                },
+                Sphere:{
+                    type:'geometry',render:true,
+                    data:{type:'sphere',x:-1.5,y:0.5,z:-1,w:1,h:1,l:1,radius:0.5,detail:2,radius2:0.5,height:1,r:0,g:0.7,b:1,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},
+                    autoUVBounds:false,
+                    physics:{
+                        usePhysics:false,
+                        position:[0,0,0],
+                        rotation:[0,0,0],
+                        scale:[1,1,1]
+                    }
+                },
+            }
+        },
+        PhysicsThing:{
+            type:'mesh',material:'BasicMat',transform:{position:[0,3,0],rotation:[0,0,0],scale:[1,1,1]},
+            computeTransformations:true,
+            render:true,
+            wireframe:false,
+            castShadows:true,
+            castShadowsTo:'[]',
+            defaultData:'[]',
+            physics:{
+                usePhysics:true,
+                type:'DYNAMIC',
+                mass:1,
+                collisionGroup:0,
+                collisionMask:'[]',
+                fixedRotation:false,
+            },
+            children:{
+                FallingThing:{
+                    type:'geometry',
+                    render:true,
+                    data:{type:'box',x:0,y:0,z:0,w:0.7,h:0.7,l:0.7,radius:0.5,radius2:0.5,height:1,detail:10,r:1,g:0,b:0,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},
+                    autoUVBounds:false,
+                    physics:{
+                        usePhysics:true,
+                        position:[0,0,0],
+                        rotation:[0,0,0],
+                        scale:[1,1,1],
+                    }
+                },
+            }
+        },
+        PhysicsThing2:{
+            type:'mesh',material:'EmissiveMat',transform:{position:[0.5,4,0],rotation:[0,0,0],scale:[1,1,1]},
+            computeTransformations:true,
+            render:true,
+            wireframe:false,
+            castShadows:false,
+            castShadowsTo:'[]',
+            defaultData:'[0.2]',
+            physics:{
+                usePhysics:true,
+                type:'DYNAMIC',
+                mass:1,
+                collisionGroup:0,
+                collisionMask:'[]',
+                fixedRotation:false,
+            },
+            children:{
+                FallingThing2:{
+                    type:'geometry',
+                    render:true,
+                    data:{type:'box',x:0,y:0,z:0,w:0.7,h:0.7,l:0.7,radius:0.5,radius2:0.5,height:1,detail:10,r:0,g:1,b:0,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},
+                    autoUVBounds:false,
+                    physics:{
+                        usePhysics:true,
+                        position:[0,0,0],
+                        rotation:[0,0,0],
+                        scale:[1,1,1],
+                    },
+                },
+            }
+        },
+        PhysicsThing3:{
+            type:'mesh',material:'BasicMat',transform:{position:[0.25,6,0.25],rotation:[0,0,0],scale:[1,1,1]},
+            computeTransformations:true,
+            render:true,
+            wireframe:false,
+            castShadows:true,
+            castShadowsTo:'[]',
+            defaultData:'[]',
+            physics:{
+                usePhysics:true,
+                type:'DYNAMIC',
+                mass:1,
+                collisionGroup:0,
+                collisionMask:'[]',
+                fixedRotation:false,
+            },
+            children:{
+                FallingThing3:{
+                    type:'geometry',render:true,
+                    data:{type:'cylinder',x:0,y:0,z:0,w:1,h:1,l:1,radius:0.5,radius2:0,height:1,detail:10,r:1,g:1,b:0,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},
+                    autoUVBounds:false,
+                    physics:{
+                        usePhysics:true,
+                        position:[0,0,0],
+                        rotation:[0,0,0],
+                        scale:[1,1,1]
+                    }
+                },
+            }
+        },
+        AmLight:{
+            type:'light',lightType:'ambient',
+            transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:false,
+            dynamic:false,
+            intensity:0.1,color:[1,1,1],attenuationPolynomial:'X*X',innerCone:-1,outerCone:-1,diffuseRemapScale:1,diffuseRemapAdd:0,illuminates:true,illuminatesMaterials:'[]'
+        },
+        DirLight:{
+            type:'light',lightType:'directional',
+            transform:{position:[0,0,0],rotation:[-90,0,0],scale:[1,1,1]},computeTransformations:true,diffuseRemapScale:1,diffuseRemapAdd:0.,
+            dynamic:false,
+            intensity:0.2,color:[1,1,1],attenuationPolynomial:'X*X',innerCone:-1,outerCone:-1,illuminates:true,illuminatesMaterials:'[]'
+        },
+        EpikLight:{
+            type:'light',lightType:'point',
+            transform:{position:[0,1,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,
+            script:'CoolLighting',dynamic:true,
+            intensity:1,color:[0,0,0],attenuationPolynomial:'X*X',innerCone:-1,outerCone:-1,diffuseRemapScale:0.5,diffuseRemapAdd:0.5,illuminates:true,illuminatesMaterials:'[]'
+        },
+    }
+},allNames,programData_info
+
+let lastParent,recurse_info=function(o,func){
+    for(let i in o){
+        if(programData._hierarchy[i])lastParent=undefined
+        o[i].parent=lastParent
+        o[i].name=i
+        func(o,i)
+        if(o[i].children){
+            lastParent=o[i]
+            recurse_info(o[i].children,func)
+        }
+    }
+},recurse=function(o,func){
+    for(let i in o){
+        func(o,i)
+        if(o[i].children)recurse(o[i].children,func)
+    }
+},__recurse=recurse
+
+function updateInfoCopy(){
+    
+    programData_info=JSON.parse(JSON.stringify(programData))
+    recurse_info(programData_info._hierarchy,()=>0)
+}
+function cleanName(name){
+    return name.indexOf(' ')>-1?name.substring(0,name.indexOf(' ')):name
+}
+
+function updateNames(){
+    allNames={}
+    recurse(programData._hierarchy,(o,i)=>{let c=cleanName(i);if(!allNames[c])allNames[c]=[];allNames[c][i.indexOf(' ')>-1?i.substring(i.indexOf(' ')+2,i.length-1):0]=1})
+    recurse(programData._assets,(o,i)=>{let c=cleanName(i);if(!allNames[c])allNames[c]=[];allNames[c][i.indexOf(' ')>-1?i.substring(i.indexOf(' ')+2,i.length-1):0]=1})
+}
+function getName(root){
+    let m=0,t
+    for(let i in allNames[root]){
+        if((i-0)-m>1){
+            m++
+            t=true
+            break
+        }
+        m=i-0
+    }
+    if(!t)m++
+    return root+(m?' ('+m+')':'')
+}
+updateNames()
+updateInfoCopy()
+function addAssetOrPass(list,name,data,scriptType=''){
+    
+    let def=defaultElementTemplate[data.type+scriptType]
+    for(let i in def)
+        if(!data[i])data[i]=def[i]
+    programData['_'+list][list==='pipeline'?name:getName(name)]=data
+    
+    updateNames()
+}
+function duplicateAssetOrPass(list,name){
+    
+    let l=JSON.parse(JSON.stringify(programData['_'+list])),added=0
+    
+    programData['_'+list]=list==='pipeline'?[]:{}
+    
+    for(let i in l){
+        
+        programData['_'+list][list==='pipeline'?(i-0)+added:i]=l[i]
+        if(i===name)programData['_'+list][list==='pipeline'?(i-0)+(++added):getName(name)]=JSON.parse(JSON.stringify(l[i]))
+    }
+}
+
+function moveAssetOrPass(list,name,sibling){
+    
+    let l=JSON.parse(JSON.stringify(programData['_'+list])),elem=l[name],added=0
+    programData['_'+list]=list==='pipeline'?[]:{}
+    
+    for(let i in l){
+        if(i!==name)programData['_'+list][list==='pipeline'?(i-0)+(++added):i]=l[i]
+        if(i===sibling)programData['_'+list][list==='pipeline'?(i-0)+(++added):name]=elem
+    }
+}
+
+function deleteAssetOrPass(list,name){
+    
+    if(list==='assets')
+        delete programData._assets[name]
+    else
+        programData._pipeline.splice(name-0,1)
+}
+
+function addObject(name,data,parent){
+    
+    let def=defaultElementTemplate[data.type]
+    for(let i in def)
+        if(!data[i])data[i]=def[i]
+    
+    if(parent){
+        recurse(programData._hierarchy,(o,i)=>{if(i===parent)parent=o[i]})
+        parent=parent.children=parent.children||{}
+    }else parent=programData._hierarchy
+    parent[getName(name)]=data
+    
+    updateNames()
+    updateInfoCopy()
+}
+
+function duplicateObject(name){
+    
+    let elem,parent=false
+    
+    recurse(programData._hierarchy,(o,i)=>{if(i===name)elem=o[i]})
+    if(!programData._hierarchy[name]){
+        recurse(programData_info._hierarchy,(o,i)=>{if(i===name)parent=o[i].parent.name})
+    }
+        
+    let s=JSON.stringify(elem),childless=JSON.parse(s)
+    delete childless.children
+    elem=JSON.parse(s)
+    
+    let chue=cleanName(name),chueMai=getName(chue)
+    addObject(chue,childless,parent)
+    moveObject(chueMai,parent,name)
+    
+    recurse(elem.children,(o,i)=>{
+        delete o[i].children
+        addObject(cleanName(i),o[i],childless)
+    })
+}
+
+function deleteObject(name){
+    
+    let elem={}
+    
+    recurse(programData._hierarchy,(o,i)=>{if(i===name)elem=o[i]})
+    let parent
+    if(programData._hierarchy[name])
+        parent=programData._hierarchy
+    else{
+        recurse(programData_info._hierarchy,(o,i)=>{if(i===name)parent=o[i].parent})
+        recurse(programData._hierarchy,(o,i)=>{if(i===parent.name)parent=o[i].children})
+    }
+    delete parent[name]
+    
+    updateNames()
+    updateInfoCopy()
+}
+
+function moveObject(name,adopter,sibling){
+    
+    let elem={}
+    
+    recurse(programData._hierarchy,(o,i)=>{if(i===name)elem=o[i]})
+    let parent,newParent
+    if(programData._hierarchy[name])
+        parent=programData._hierarchy
+    else{
+        recurse(programData_info._hierarchy,(o,i)=>{if(i===name)parent=o[i].parent})
+        recurse(programData._hierarchy,(o,i)=>{if(i===parent.name)parent=o[i].children})
+    }
+    delete parent[name]
+    
+    if(adopter)
+        recurse(programData._hierarchy,(o,i)=>{if(i===adopter)newParent=o[i].children||{}})
+    else
+        newParent=programData._hierarchy
+        
+    let newParentSiblings=Object.keys(newParent)
+    if(newParentSiblings.length){
+        
+        let newwie={}
+        
+        if(!sibling)newwie[name]=elem
+        
+        for(let i in newParent){
+            
+            newwie[i]=JSON.parse(JSON.stringify(newParent[i]))
+            delete newParent[i]
+            if(i===sibling)
+                newwie[name]=elem
+        }
+        for(let i in newwie)
+            newParent[i]=newwie[i]
+    }else{
+        newParent.children={}
+        newParent.children[name]=copy
+    }
+    
+    updateNames()
+    updateInfoCopy()
+}
+
+runProgramButton.onclick=()=>{window.mainProgramDIV.innerHTML='';CompileProgram(programData)(window.mainProgramDIV)}
+runProgramButton.onclick()
+
+openProgramButton.onclick=()=>{
+    let w=window.open(),c=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Program</title></head><body style='margin:0px;overflow:hidden;'><div id='PROGRAM_DIV' style='position:fixed;left:0%;top:0%;right:0%;bottom:0%;background-color:rgb(255,0,0)'></div><script src='https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js'></${'s'}cript><script src='https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js'></${'s'}cript><script src='https://cdn.jsdelivr.net/gh/Dddatt/D.js@v2.3.0/index.js'></${'s'}cript><script type>setTimeout(()=>{PROGRAM_DIV.width=innerWidth;PROGRAM_DIV.height=innerHeight;(${CompileProgram(programData)})(PROGRAM_DIV)},0)</${'s'}cript></body></html>`
+    w.document.open()
+    w.document.write(c)
+    w.document.close()
+    console.log(c)
+}
+
+printDataButton.onclick=()=>{
+    let w=window.open()
+    w.document.open()
+    w.document.write("<title>JSON Data</title><body style='margin:0px'><textarea style='margin:0px;width:100%;height:100%;resize:none' spellcheck='false' readonly='true'>"+JSON.stringify(programData)+"</textarea></body>")
+    w.document.close()
+}
+loadDataButton.onclick=(e)=>{
+    if(document.getElementById('loadDataPopup'))return
+    let elem=document.createElement('div')
+    elem.innerHTML="<div id='loadDataPopup' style='background:rgb(25,25,25);padding:8px;border-radius:5px;position:fixed;left:"+e.clientX+"px;top:"+e.clientY+"px;font-size:14px;font-family:sans-serif;width:150px;'>Load a program using JSON text.<div style='margin-top:8px'></div>The current program will be overwriten.<textarea id='loadData_txt' style='font-size:10px;margin-left:50%;margin-top:10px;width:146px;height:50px;transform:translate(-50%,0%);resize:none' spellcheck='false'></textarea><button id='loadData_cancel' style='position:static;margin-top:5px;margin-left:50%;width:146px;transform:translate(-50%,0%)'>Cancel</button><button id='loadData_import' style='position:static;margin-top:5px;margin-left:50%;width:146px;transform:translate(-50%,0%)'>Import</button></div>"
+    document.body.appendChild(elem)
+    
+    loadData_cancel.onclick=()=>document.body.removeChild(elem)
+    loadData_import.onclick=()=>{
+        try{
+            if(loadData_txt.value.length>0)
+                programData=JSON.parse(loadData_txt.value.trim())
+        }catch(e){let er='\nError Loading JSON Data: '+e;console.log(er);alert(er)}
+        loadData_cancel.onclick()
+        updateHierarchyPage()
+        updateAssetsPage()
+        updatePipelinePage()
+    }
+}
+
+document.body.oncontextmenu=(e)=>e.preventDefault()
+
+function connectScript(name){
+    scriptPage.style.backgroundColor='rgb(0,0,0,0)'
+    emptyScriptDiv.style.display='none'
+    codeEditor.setOptions({maxLines:(windowHeight-Number(bottomArea.style.top.replace('px',''))-75)*0.0715,minLines:1e9})
+    selectedScript.style.display='block'
+    if(programData._assets[name].lang==='txt')
+        codeEditor.getSession().setMode('')
+    else
+        codeEditor.getSession().setMode(('ace/mode/'+programData._assets[name].lang.replace('js','javascript')))
+    connectedScript=name
+    codeEditor.session.setValue(programData._assets[name].code)
+    scriptPage.style.display='block'
+    scriptTabButton.onclick()
+    scriptNameScriptPage.innerHTML='<b>'+name+' ('+programData._assets[connectedScript].lang+')</b>'
+}
+function getElementSVGIcon(i){
+    return i==='camera'?"<path fill='rgb(200,200,200)' d='M0 4L0 11L9 11L 9 4M10 6L15 4L15 11L10 9'></path>":i==='mesh'?"<path stroke='rgb(220,220,220)' fill='rgb(0,0,0,0)' stroke-width='2' d='M7.5 3L2 13L13 13z'></path>":i==='geometry'?"<path fill='rgb(0,0,0,0)' stroke='rgb(220,220,220)' stroke-width='1.5' d='M7.5 0L15 4L15 11L7.5 15L 0 11L0 4L7.5 0M0 4L 7.5 7L15 3M7.5 7L7.5 15'></path>":i==='light'?"<g transform='translate(-2,-3) scale(0.65,0.65)'><path fill='rgb(200,200,200)' d='M 10 20 C 0 1 30 0 20 20'></path><rect fill='rgb(200,200,200)' x='10' y='22' width='10' height='4' rx='2'></rect><path stroke='rgb(50,50,50)' fill='rgb(0,0,0,0)' stroke-width='2' d='M 11 15 L 13 12L 15 15L 17 12L19 15'></g>":i==='shadower'?"<path stroke-width='10' stroke='rgb(250,250,250,0.75)' d='M0 0L3 3'></path><path stroke-width='10' stroke='rgb(250,250,250,0.5)' d='M0 0L6 6'></path><path stroke-width='10' stroke='rgb(250,250,250,0.25)' d='M0 0L9 9'></path><path stroke-width='10' stroke='rgb(250,250,250,0.15)' d='M0 0L12 12'></path>":i==='renderTarget'?"<path stroke='rgb(220,220,220)' fill='rgb(0,0,0,0)' stroke-width='3' d='M0 0L15 0L15 15L0 15z'></path><circle cx='7.5' cy='7.5' r='3' fill='rgb(220,220,220)' fill='rgb(0,0,0,0)'></circle>":i==='texture'?"<path stroke='rgb(220,220,220)' fill='rgb(0,0,0,0)' stroke-width='1' d='M0 0L15 15M0 3L12 15M0 6L9 15M0 9L6 15M0 12L3 15M3 0L15 12M6 0L15 9M9 0L15 6M12 0L15 3'></path>":i==='material'?"<circle cx='7.5' cy='7.5' r='10' stroke-width='2' fill='rgb(220,220,220)'></circle><path stroke='rgb(50,50,50)' fill='rgb(0,0,0,0)' stroke-width='2' d='M7.5 0L7.5 15M0 7.5 15 7.5'>":i==='script'?"<text  x='-0.75' y='10' stroke='rgb(220,220,220)' stroke-width='0.5' fill='rgb(220,220,220)' style='font-size:9px'>&#60;/&#62;</text>":"<circle cx='7.5' cy='7.5' r='7.5' stroke-width='3' fill='rgb(0,0,0,0)' stroke='rgb(220,220,220)'></circle>"
+}
+
+function updateAssetsPage(){
+    let s=''
+    for(let i in programData._assets){
+        let a=programData._assets[i]
+        s+="<div class='assetItemInList' id='ASSET_"+i+"' "+(selectedElement&&selectedElement.obj===a?"style='background-color:rgb(0,0,0,0.5);'":'')+"><b>"+i+"</b><br><span style='font-size:12px'>("+(a.type==='script'?a.lang:a.type)+")</span></div>"
+        
+    }
+    assetsPageList.innerHTML=s
+    for(let i in programData._assets){
+        let a=programData._assets[i]
+        window['ASSET_'+i].onclick=()=>{
+            if(painai&&painai.from==='assets'){
+                moveAssetOrPass('assets',painai.name,i)
+                updateAssetsPage()
+            }
+            painai=0
+            if(selectedElement&&window[selectedElement.html])window[selectedElement.html].style.backgroundColor=selectedElement.from==='assets'?'rgb(0,0,0,0.2)':''
+            if(selectedElement&&selectedElement.obj===a)selectedElement=0;else selectedElement={obj:a,name:i,from:'assets',html:'ASSET_'+i}
+            updateAssetsPage()
+            updatePropertiesPage()
+        }
+        window['ASSET_'+i].ondblclick=()=>{
+            if(a.type==='script')connectScript(i)
+        }
+        window['ASSET_'+i].onmouseover=()=>currentlyHovering={obj:a,name:i}
+        window['ASSET_'+i].onmousemove=()=>window['ASSET_'+i].style.cursor=painai?'crosshair':'pointer'
+        
+    }
+    assetsPage.oncontextmenu=(e)=>{
+        
+        if(!selectedElement||currentlyHovering.name!==selectedElement.name)window['ASSET_'+currentlyHovering.name].onclick()
+        
+        contextMenu.onclick=(e)=>contextMenu.style.display='block'
+        contextMenu.style.display='block'
+        contextMenu.style.left=e.clientX+'px'
+        contextMenu.style.top=e.clientY+'px'
+        
+        contextMenu.innerHTML="<div style='display:inline-block;border-radius:5px;border:2px solid rgb(0,0,0)'><div id='_addAsset' class='contextMenuOption'>Add To Program</div><div id='_move' class='contextMenuOption'>Move</div><div id='_duplicate' class='contextMenuOption'>Duplicate</div><div id='_delete' class='contextMenuOption'>Delete</div></div><div id='_sideMenu' style='display:inline-block;border-radius:5px;border:2px solid rgb(0,0,0);position:absolute;margin-left:-2px;'></div>"
+        
+        let settings=[_addAsset,_move,_duplicate,_delete]
+        
+        contextMenu.onmouseleave=()=>{for(let j in settings){settings[j].style.backgroundColor='rgb(30,30,30)'}_sideMenu.innerHTML=''}
+        
+        for(let i in settings)
+            settings[i].onmouseover=()=>{
+                contextMenu.onmouseleave()
+                settings[i].style.backgroundColor='rgb(15,15,15)'
+                _sideMenu.innerHTML=''
+                switch(settings[i].id){
+                    
+                    case '_addAsset':
+                        _sideMenu.innerHTML="<div id='addType_JSscript_object' class='contextMenuOption'>JS Script (object)</div><div id='addType_JSscript_texture' class='contextMenuOption'>JS Script (texture)</div><div id='addType_GLSLscript_material' class='contextMenuOption'>GLSL Script (geometry)</div><div id='addType_GLSLscript_pp' class='contextMenuOption'>GLSL Script (post processing)</div><div id='addType_txt' class='contextMenuOption'>Text File</div><div id='addType_material' class='contextMenuOption'>Material</div><div id='addType_texture' class='contextMenuOption'>Texture</div><div id='addType_renderTarget' class='contextMenuOption'>Render Target</div>"
+                        let sideSettings=[addType_JSscript_object,addType_JSscript_texture,addType_GLSLscript_material,addType_GLSLscript_pp,addType_txt,addType_material,addType_texture,addType_renderTarget]
+                        for(let j in sideSettings)
+                            sideSettings[j].onclick=()=>{
+                                let yang=['script','script','script','script','script','material','texture','renderTarget'][j],_n=D.doGrammar(yang),n=getName(_n)
+                                
+                                addAssetOrPass('assets',_n,{type:yang,lang:['js','js','glsl','glsl','txt'][j]},'_'+['object','texture','material','pp','txt'][j])
+                                moveAssetOrPass('assets',n,currentlyHovering.name)
+                                updateAssetsPage()
+                            }
+                    break
+                    case '_move':
+                        settings[i].onclick=()=>
+                            painai={name:currentlyHovering.name,from:'assets'}
+                            
+                    break
+                    case '_duplicate':
+                        settings[i].onclick=()=>{
+                            duplicateAssetOrPass('assets',currentlyHovering.name)
+                            updateAssetsPage()
+                        }
+                    break
+                    case '_delete':
+                        settings[i].onclick=()=>{
+                            deleteAssetOrPass('assets',currentlyHovering.name)
+                            selectedElement=0
+                            updateAssetsPage()
+                            updatePropertiesPage()
+                        }
+                    break
+                }
+            }
+    }
+}
+function updatePipelinePage(){
+    let s='',dupeCount={}
+    for(let i in programData._pipeline){
+        let a=programData._pipeline[i],n=(a.script?a.script:a.type)
+        s+="<div style='font-size:20px;text-align:center'>🠗</div><div class='pipelineItemInList' id='PIPELINE_"+i+"'><div id='PIPELINE_"+i+"_TEXT' style='margin-top:-12px;margin-bottom:-5px;padding-top:3px;padding-bottom:3px"+(selectedElement&&selectedElement.obj===a?";background-color:rgb(0,0,0,0.4)":'')+"'>"+n+(dupeCount[n]?'('+(dupeCount[n]++)+')':'')+"</div></div>"
+        if(!dupeCount[n])dupeCount[n]=1
+    }
+    pipelinePage.innerHTML=s
+    for(let i in programData._pipeline){
+        let a=programData._pipeline[i]
+        window['PIPELINE_'+i].onclick=()=>{
+            if(painai&&painai.from==='pipeline'){
+                moveAssetOrPass('pipeline',painai.name+'',i)
+                for(let i=programData._pipeline.length;i--;)if(!programData._pipeline[i])programData._pipeline.splice(i,1)
+                updatePipelinePage()
+            }
+            painai=0
+            if(selectedElement&&window[selectedElement.html])window[selectedElement.html].style.backgroundColor=selectedElement.from==='assets'?'rgb(0,0,0,0.2)':''
+            if(selectedElement&&selectedElement.obj===a)selectedElement=0;else selectedElement={obj:a,name:i,from:'pipeline',html:'PIPELINE_'+i+'_TEXT'}
+            updatePipelinePage()
+            updatePropertiesPage()
+        }
+        window['PIPELINE_'+i].onmouseover=()=>currentlyHovering={obj:a,name:i}
+        window['PIPELINE_'+i].onmousemove=()=>window['PIPELINE_'+i].style.cursor=painai?'crosshair':'pointer'
+    }
+    pipelinePage.oncontextmenu=(e)=>{
+        if(!selectedElement||currentlyHovering.name!==selectedElement.name)window['PIPELINE_'+currentlyHovering.name].onclick()
+        
+        contextMenu.onclick=(e)=>contextMenu.style.display='block'
+        contextMenu.style.display='block'
+        contextMenu.style.left=e.clientX+'px'
+        contextMenu.style.top=e.clientY+'px'
+        
+        contextMenu.innerHTML="<div style='display:inline-block;border-radius:5px;border:2px solid rgb(0,0,0)'><div id='_addPass' class='contextMenuOption'>Add To Program</div><div id='_move' class='contextMenuOption'>Move</div><div id='_duplicate' class='contextMenuOption'>Duplicate</div><div id='_delete' class='contextMenuOption'>Delete</div></div><div id='_sideMenu' style='display:inline-block;border-radius:5px;border:2px solid rgb(0,0,0);position:absolute;margin-left:-2px'></div>"
+        
+        let settings=[_addPass,_move,_duplicate,_delete]
+        
+        contextMenu.onmouseleave=()=>{for(let j in settings){settings[j].style.backgroundColor='rgb(30,30,30)'}_sideMenu.innerHTML=''}
+        
+        for(let i in settings)
+            settings[i].onmouseover=()=>{
+                contextMenu.onmouseleave()
+                settings[i].style.backgroundColor='rgb(15,15,15)'
+                _sideMenu.innerHTML=''
+                switch(settings[i].id){
+                    
+                    case '_addPass':
+                        _sideMenu.innerHTML="<div id='addType_PP' class='contextMenuOption'>Post Processor</div><div id='addType_physics' class='contextMenuOption'>Update Physics</div><div id='addType_trans' class='contextMenuOption'>Compute Transformations</div><div id='addType_shadows' class='contextMenuOption'>Render Shadow Maps</div><div id='addType_main' class='contextMenuOption'>Main Render</div>"
+                        let sideSettings=[addType_PP,addType_physics,addType_trans,addType_shadows,addType_main]
+                        for(let j in sideSettings)
+                            sideSettings[j].onclick=()=>{
+                                let yang=['PostProcessor','UpdatePhysics','ComputeTransformations','RenderShadowMaps','MainRender'][j],n=programData._pipeline.length
+                                
+                                addAssetOrPass('pipeline',programData._pipeline.length,{type:yang})
+                                moveAssetOrPass('pipeline',n,currentlyHovering.name)
+                                for(let i=programData._pipeline.length;i--;)if(!programData._pipeline[i])programData._pipeline.splice(i,1)
+                                
+                                updatePipelinePage()
+                            }
+                    break
+                    case '_move':
+                        settings[i].onclick=()=>
+                            painai={name:currentlyHovering.name-0,from:'pipeline'}
+                    break
+                    case '_duplicate':
+                        settings[i].onclick=()=>{
+                            duplicateAssetOrPass('pipeline',currentlyHovering.name)
+                            for(let i=programData._pipeline.length;i--;)if(!programData._pipeline[i])programData._pipeline.splice(i,1)
+                            updatePipelinePage()
+                        }
+                    break
+                    case '_delete':
+                        settings[i].onclick=()=>{
+                            deleteAssetOrPass('pipeline',currentlyHovering.name)
+                            for(let i=programData._pipeline.length;i--;)if(!programData._pipeline[i])programData._pipeline.splice(i,1)
+                            selectedElement=0
+                            updatePipelinePage()
+                            updatePropertiesPage()
+                        }
+                    break
+                }
+            }
+    }
+}
+function updateHierarchyPage(){
+    hierarchyPage.innerHTML=''
+    let depth=0,currentlyHovering,lastParent=false
+    function recurse(o,f,lp){
+        for(let i in o){
+            if(f){
+                window['HIERARCHY_'+i].onclick=()=>{
+                    if(painai&&painai.from==='hierarchy'){
+                        if(painai.name!==i)
+                            if(o[i].type!=='geometry'||painai.findA!=='parent')
+                                moveObject(painai.name,painai.findA==='parent'?i:lp,painai.findA==='parent'?false:i)
+                            else alert("You can't add a child to geometry objects.")
+                        updateHierarchyPage()
+                    }
+                    painai=0
+                    if(selectedElement&&window[selectedElement.html])window[selectedElement.html].style.backgroundColor=selectedElement.from==='assets'?'rgb(0,0,0,0.2)':''
+                    
+                    if(contextMenu.style.display!=='block'&&selectedElement&&selectedElement.obj===o[i])selectedElement=0;else {selectedElement={obj:o[i],name:i,from:'hierarchy',html:'HIERARCHY_'+i}}
+                    
+                    updateHierarchyPage()
+                    updatePropertiesPage()
+                }
+                window['HIERARCHY_'+i].onmouseover=()=>{
+                    currentlyHovering={obj:o,name:i}
+                }
+                window['HIERARCHY_'+i].onmousemove=()=>window['HIERARCHY_'+i].style.cursor=painai?'crosshair':'pointer'
+            }else
+                hierarchyPage.innerHTML+="<div class='hierarchyItemInList' id='HIERARCHY_"+i+"'style='"+(selectedElement&&selectedElement.obj===o[i]?"background-color:rgb(0,0,0,0.4)":'')+"'><svg style='position:absolute;width:15px;height:15px;margin-left:"+(Math.max(depth,0)*30+5)+"px;margin-top:3px'>"+getElementSVGIcon(o[i].type)+"</svg><div style='margin-left:"+(Math.max(depth,0)*30+25)+"px;transform:translate(0px,2px);width:5000px'>"+i+"</div></div>"
+            depth++
+            if(o[i].children)recurse(o[i].children,f,i)
+            depth--
+        }
+    }
+    recurse(programData._hierarchy,0)
+    recurse(programData._hierarchy,1)
+    hierarchyPage.oncontextmenu=(e)=>{
+        
+        if(!selectedElement||currentlyHovering.name!==selectedElement.name)window['HIERARCHY_'+currentlyHovering.name].onclick()
+        
+        contextMenu.onclick=(e)=>contextMenu.style.display='block'
+        contextMenu.style.display='block'
+        contextMenu.style.left=e.clientX+'px'
+        contextMenu.style.top=e.clientY+'px'
+        
+        contextMenu.innerHTML="<div style='display:inline-block;border-radius:5px;border:2px solid rgb(0,0,0)'><div id='_addObject' class='contextMenuOption'>Add To Program</div><div id='_addChild' class='contextMenuOption'>Add Child</div><div id='_move' class='contextMenuOption'>Move</div><div id='_duplicate' class='contextMenuOption'>Duplicate</div><div id='_delete' class='contextMenuOption'>Delete</div></div><div id='_sideMenu' style='display:inline-block;border-radius:5px;border:2px solid rgb(0,0,0);position:absolute;margin-left:-2px'></div>"
+        
+        let settings=[_addObject,_addChild,_move,_duplicate,_delete]
+        
+        contextMenu.onmouseleave=()=>{for(let j in settings){settings[j].style.backgroundColor='rgb(30,30,30)'}_sideMenu.innerHTML=''}
+        
+        for(let i in settings)
+            settings[i].onmouseover=()=>{
+                contextMenu.onmouseleave()
+                settings[i].style.backgroundColor='rgb(15,15,15)'
+                _sideMenu.innerHTML=''
+                switch(settings[i].id){
+                    
+                    case '_addObject':
+                    case '_addChild':
+                        _sideMenu.innerHTML="<div id='addType_block' class='contextMenuOption'>Block</div><div id='addType_camera' class='contextMenuOption'>Camera</div><div id='addType_shadower' class='contextMenuOption'>Shadower</div><div id='addType_mesh' class='contextMenuOption'>Mesh</div><div id='addType_geometry' class='contextMenuOption'>Geometry</div><div id='addType_light' class='contextMenuOption'>Light</div>"
+                        let sideSettings=[addType_block,addType_camera,addType_shadower,addType_mesh,addType_geometry,addType_light]
+                        for(let j in sideSettings)
+                            sideSettings[j].onclick=()=>{
+                                let yang=['block','camera','shadower','mesh','geometry','light'][j]
+                                
+                                if(yang==='geometry'&&selectedElement.obj.type!=='mesh'){
+                                    alert('You can only add a geometry object as a child of meshes.')
+                                    return
+                                }
+                                
+                                addObject(D.doGrammar(yang),{type:yang},settings[i].id==='_addObject'?false:currentlyHovering.name)
+                                updateHierarchyPage()
+                            }
+                    break
+                    case '_move':
+                        _sideMenu.innerHTML="<div id='moveTo_parent' class='contextMenuOption'>Move to Parent</div><div id='moveTo_sibling' class='contextMenuOption'>Move to Sibling</div>"
+                        let _sideSettings=[moveTo_parent,moveTo_sibling]
+                        for(let j in _sideSettings)
+                            _sideSettings[j].onclick=()=>
+                                painai={findA:['parent','sibling'][j],name:currentlyHovering.name,from:'hierarchy'}
+                            
+                    break
+                    case '_duplicate':
+                        settings[i].onclick=()=>{
+                            duplicateObject(currentlyHovering.name)
+                            updateHierarchyPage()
+                        }
+                    break
+                    case '_delete':
+                        settings[i].onclick=()=>{
+                            deleteObject(currentlyHovering.name)
+                            selectedElement=0
+                            updateHierarchyPage()
+                            updatePropertiesPage()
+                        }
+                    break
+                }
+            }
+    }
+}
+function updatePropertiesPage(){
+    propertiesPage.innerHTML=selectedElement?'':"<div style='position:absolute;font-size:10px;text-align:center;left:0px;top:0px;bottom:0px;right:0px;margin-top:150px;transform:translate(0px,0%)'>(no element selected)</div>"
+    if(!selectedElement)return
+    
+    let {obj,name}=selectedElement,html="<div style='text-align:center;left:0px;right:0px;margin-left:3px;margin-bottom:3px;margin-top:0px'><b>"+D.doGrammar(obj.type)+"</b></div>"+(selectedElement.from!=='pipeline'?"<div style='position:absolute;left:0px;right:0px'><svg style='width:15px;height:15px;transform:scale(1.5,1.5);margin-left:10px;margin-top:2px;margin-bottom:-2px'>"+getElementSVGIcon(obj.type)+"</svg><input class='propertiesPanelInput' id='obj_name' type='text' style='margin-top:8px;width:95px;height:15px;margin-bottom:5px;margin-left:11px' value='"+name+"'>":''),contain='<div style="display:inline-block;width:100%;">',inputChangesQ=[]
+    
+    function addCheckbox(path,br=true){
+        let s=obj
+        for(let i in path)s=s[path[i]]
+        html+="<input id='propertyInput_"+inputChangesQ.push(path)+"' style='display:inline-block;width:12px;height:12px;margin-left:5px;margin-bottom:2px;transform:translate(0px,2px);cursor:pointer' type='checkbox' "+(s?'checked':'')+">"+(br?'<br>':'')
+    }
+    function addNumInput(path,br,minmax="step='any'"){
+        let s=obj
+        for(let i in path)s=s[path[i]]
+        html+="<input id='propertyInput_"+inputChangesQ.push(path)+"' style='display:inline-block;margin-top:3px;width:32px;height:15px;font-size:11px;margin-left:5px;margin-bottom:2px;padding-bottom:2px' type='number' value='"+s+"' "+minmax+">"+(br?'<br>':'')
+    }
+    function addTextInput(path,br){
+        let s=obj
+        for(let i in path)s=s[path[i]]
+        html+="<input spellcheck='false' id='propertyInput_"+inputChangesQ.push(path)+"' style='display:inline-block;margin-top:3px;width:125px;height:15px;font-size:11px;margin-left:5px;margin-bottom:2px;padding-bottom:2px' type='text' placeholder='...' value='"+(s?s:'')+"'>"+(br?'<br>':'')
+    }
+    function addDropdown(path,opt,w=85){
+        let s=obj
+        for(let i in path)s=s[path[i]]
+        html+="<select id='propertyInput_"+inputChangesQ.push(path)+"' style='display:inline-block;margin-top:3px;width:"+w+"px;height:19px;font-size:11px;margin-left:5px;margin-bottom:2px;padding:2px 0px 4px 0px'>"
+        for(let i in opt)html+='<option value="'+opt[i][0]+'"'+(opt[i][0]===s?'selected':'')+'>'+opt[i][1]+'</option>'
+        html+='</select><br>'
+    }
+    function addLabel(s,m=10,f=11){
+        html+="<div style='display:inline-block;margin-top:2px;margin-left:"+m+"px;font-size:"+f+"px'>"+s+": </div>"
+    }
+    function addHead(h,il){
+        html+="<div style='"+(il?'display:inline-block;':'')+"margin-left:5px;margin-top:13px;margin-bottom:6px;margin-right:5px'><b style='font-size:12.5px'>"+h+"</b></div>"
+    }
+    switch(obj.type){
+        case 'block':
+            addHead('Transform')
+            addLabel('Position')
+            html+=contain
+            addNumInput(['transform','position',0])
+            addNumInput(['transform','position',1])
+            addNumInput(['transform','position',2])
+            html+='</div><br>'
+            addLabel('Rotation')
+            html+=contain
+            addNumInput(['transform','rotation',0])
+            addNumInput(['transform','rotation',1])
+            addNumInput(['transform','rotation',2])
+            html+='</div><br>'
+            addLabel('Scale')
+            html+=contain
+            addNumInput(['transform','scale',0])
+            addNumInput(['transform','scale',1])
+            addNumInput(['transform','scale',2])
+            html+='</div><br>'
+            addLabel('Compute Transformations')
+            addCheckbox(['computeTransformations'])
+            addHead('Script',true)
+            addTextInput(['script'],true)
+        break
+        case 'camera':
+            addHead('Transform')
+            addLabel('Position')
+            html+=contain
+            addNumInput(['transform','position',0])
+            addNumInput(['transform','position',1])
+            addNumInput(['transform','position',2])
+            html+='</div><br>'
+            addLabel('Rotation')
+            html+=contain
+            addNumInput(['transform','rotation',0])
+            addNumInput(['transform','rotation',1])
+            addNumInput(['transform','rotation',2])
+            html+='</div><br>'
+            addLabel('Scale')
+            html+=contain
+            addNumInput(['transform','scale',0])
+            addNumInput(['transform','scale',1])
+            addNumInput(['transform','scale',2])
+            html+='</div><br>'
+            addLabel('Compute Transformations')
+            addCheckbox(['computeTransformations'])
+            addHead('Projection')
+            addLabel('Type')
+            addDropdown(['projectionType'],[['perspective','Perspective'],['orthographic','Orthographic']])
+            addLabel('FOV')
+            addNumInput(['FOV'],true)
+            addLabel('Near Plane')
+            addNumInput(['near'],true)
+            addLabel('Far Plane')
+            addNumInput(['far'],true)
+            addHead('Clear Color')
+            addLabel('Red')
+            addNumInput(['clearColor',0],true)
+            addLabel('Green')
+            addNumInput(['clearColor',1],true)
+            addLabel('Blue')
+            addNumInput(['clearColor',2],true)
+            addLabel('Alpha')
+            addNumInput(['clearColor',3],true)
+            addHead('Script',true)
+            addTextInput(['script'],true)
+        break
+        case 'shadower':
+            addHead('Transform')
+            addLabel('Position')
+            html+=contain
+            addNumInput(['transform','position',0])
+            addNumInput(['transform','position',1])
+            addNumInput(['transform','position',2])
+            html+='</div><br>'
+            addLabel('Rotation')
+            html+=contain
+            addNumInput(['transform','rotation',0])
+            addNumInput(['transform','rotation',1])
+            addNumInput(['transform','rotation',2])
+            html+='</div><br>'
+            addLabel('Scale')
+            html+=contain
+            addNumInput(['transform','scale',0])
+            addNumInput(['transform','scale',1])
+            addNumInput(['transform','scale',2])
+            html+='</div><br>'
+            addLabel('Compute Transformations')
+            addCheckbox(['computeTransformations'])
+            addHead('Projection')
+            addLabel('Type')
+            addDropdown(['projectionType'],[['perspective','Perspective'],['orthographic','Orthographic']])
+            addLabel('FOV')
+            addNumInput(['FOV'],true)
+            addLabel('Near Plane')
+            addNumInput(['near'],true)
+            addLabel('Far Plane')
+            addNumInput(['far'],true)
+            addHead('Shadow Settings')
+            addLabel('Render Shadow Map')
+            addCheckbox(['computeShadowMap'])
+            addLabel('Width')
+            addNumInput(['width'],true)
+            addLabel('Height')
+            addNumInput(['height'],true)
+            addLabel('Box Blur Radius')
+            addNumInput(['blurSamples'],true)
+            addLabel('Blur Radius')
+            addNumInput(['blurRadius'],true)
+            addLabel('Shadow Darkness')
+            addNumInput(['intensity'],true)
+            addLabel('Bias Scale')
+            addNumInput(['biasScale'],true)
+            addLabel('Bias Add')
+            addNumInput(['biasAdd'],true)
+            addHead('Script',true)
+            addTextInput(['script'],true)
+        break
+        case 'mesh':
+            addHead('Transform')
+            addLabel('Position')
+            html+=contain
+            addNumInput(['transform','position',0])
+            addNumInput(['transform','position',1])
+            addNumInput(['transform','position',2])
+            html+='</div><br>'
+            addLabel('Rotation')
+            html+=contain
+            addNumInput(['transform','rotation',0])
+            addNumInput(['transform','rotation',1])
+            addNumInput(['transform','rotation',2])
+            html+='</div><br>'
+            addLabel('Scale')
+            html+=contain
+            addNumInput(['transform','scale',0])
+            addNumInput(['transform','scale',1])
+            addNumInput(['transform','scale',2])
+            html+='</div><br>'
+            addLabel('Compute Transformations')
+            addCheckbox(['computeTransformations'])
+            addHead('Graphics')
+            addLabel('Render')
+            addCheckbox(['render'])
+            addLabel('Wireframe')
+            addCheckbox(['wireframe'])
+            addLabel('Material')
+            addTextInput(['material'],true)
+            addLabel('Cast Shadows')
+            addCheckbox(['castShadows'])
+            addLabel('Casts Shadows To')
+            addTextInput(['castShadowsTo'],true)
+            addLabel('Default Data')
+            addTextInput(['defaultData'],true)
+            addHead('Rigid Body')
+            addLabel('Use Physics')
+            addCheckbox(['physics','usePhysics'])
+            addLabel('Type')
+            addDropdown(['physics','type'],[['STATIC','Static'],['DYNAMIC','Dynamic'],['KINEMATIC','Kinematic']])
+            addLabel('Mass')
+            addNumInput(['physics','mass'],true)
+            addLabel('Fixed Rotation')
+            addCheckbox(['physics','fixedRotation'])
+            addLabel('Collision Group')
+            addNumInput(['physics','collisionGroup'],true,"min='0' max='31'")
+            addLabel('Collision Mask')
+            addTextInput(['physics','collisionMask'],true)
+            addHead('Script',true)
+            addTextInput(['script'],true)
+        break
+        case 'geometry':
+            addHead('Mesh Data')
+            addLabel('Render')
+            addCheckbox(['render'])
+            addLabel('Type')
+            addDropdown(['data','type'],[['box','Box'],['sphere','Sphere'],['cylinder','Cylinder'],['obj','OBJ']])
+            addLabel('Position')
+            html+=contain
+            addNumInput(['data','x'])
+            addNumInput(['data','y'])
+            addNumInput(['data','z'])
+            html+='</div><br>'
+            addLabel('Rotation')
+            html+=contain
+            addNumInput(['data','rx'])
+            addNumInput(['data','ry'])
+            addNumInput(['data','rz'])
+            html+='</div><br>'
+            switch(obj.data.type){
+                case 'box':
+                    addLabel('Size')
+                    html+=contain
+                    addNumInput(['data','w'])
+                    addNumInput(['data','h'])
+                    addNumInput(['data','l'])
+                    html+='</div><br>'
+                    addLabel('Color')
+                    html+=contain
+                    addNumInput(['data','r'])
+                    addNumInput(['data','g'])
+                    addNumInput(['data','b'])
+                    html+='</div><br>'
+                break
+                case 'sphere':
+                    addLabel('Color')
+                    html+=contain
+                    addNumInput(['data','r'])
+                    addNumInput(['data','g'])
+                    addNumInput(['data','b'])
+                    html+='</div><br>'
+                    addLabel('Radius')
+                    addNumInput(['data','radius'],true)
+                    addLabel('Detail')
+                    addNumInput(['data','detail'],true)
+                break
+                case 'cylinder':
+                    addLabel('Color')
+                    html+=contain
+                    addNumInput(['data','r'])
+                    addNumInput(['data','g'])
+                    addNumInput(['data','b'])
+                    html+='</div><br>'
+                    addLabel('Radius 1')
+                    addNumInput(['data','radius'],true)
+                    addLabel('Radius 2')
+                    addNumInput(['data','radius2'],true)
+                    addLabel('Height')
+                    addNumInput(['data','height'],true)
+                    addLabel('Detail')
+                    addNumInput(['data','detail'],true,"min='3'")
+                break
+                case 'obj':
+                    addLabel('Scale')
+                    html+=contain
+                    addNumInput(['data','sx'])
+                    addNumInput(['data','sy'])
+                    addNumInput(['data','sz'])
+                    html+='</div><br>'
+                    addLabel('Color')
+                    html+=contain
+                    addNumInput(['data','r'])
+                    addNumInput(['data','g'])
+                    addNumInput(['data','b'])
+                    html+='</div><br>'
+                    addLabel('OBJ File')
+                    addTextInput(['data','obj'],true)
+                    addLabel('Override Color')
+                    addCheckbox(['data','overrideColor'])
+                break
+            }
+            addLabel('Extra Data')
+            addTextInput(['data','data'],true)
+            if(obj.data.type!=='obj'){
+                addHead('Texture Mapping')
+                addLabel('Auto UV Bounds')
+                addCheckbox(['autoUVBounds'])
+                let x='x',y='y',w=obj.autoUVBounds?'sw':'w',h=obj.autoUVBounds?'sh':'h'
+                switch(obj.data.type){
+                    case 'box':
+                        addLabel('Top')
+                        html+=contain
+                        addNumInput(['data','textureMapping','top',x])
+                        addNumInput(['data','textureMapping','top',y])
+                        addNumInput(['data','textureMapping','top',w])
+                        addNumInput(['data','textureMapping','top',h])
+                        html+='</div><br>'
+                        addLabel('Bottom')
+                        html+=contain
+                        addNumInput(['data','textureMapping','bottom',x])
+                        addNumInput(['data','textureMapping','bottom',y])
+                        addNumInput(['data','textureMapping','bottom',w])
+                        addNumInput(['data','textureMapping','bottom',h])
+                        html+='</div><br>'
+                        addLabel('Left')
+                        html+=contain
+                        addNumInput(['data','textureMapping','left',x])
+                        addNumInput(['data','textureMapping','left',y])
+                        addNumInput(['data','textureMapping','left',w])
+                        addNumInput(['data','textureMapping','left',h])
+                        html+='</div><br>'
+                        addLabel('Right')
+                        html+=contain
+                        addNumInput(['data','textureMapping','right',x])
+                        addNumInput(['data','textureMapping','right',y])
+                        addNumInput(['data','textureMapping','right',w])
+                        addNumInput(['data','textureMapping','right',h])
+                        html+='</div><br>'
+                        addLabel('Front')
+                        html+=contain
+                        addNumInput(['data','textureMapping','front',x])
+                        addNumInput(['data','textureMapping','front',y])
+                        addNumInput(['data','textureMapping','front',w])
+                        addNumInput(['data','textureMapping','front',h])
+                        html+='</div><br>'
+                        addLabel('Back')
+                        html+=contain
+                        addNumInput(['data','textureMapping','back',x])
+                        addNumInput(['data','textureMapping','back',y])
+                        addNumInput(['data','textureMapping','back',w])
+                        addNumInput(['data','textureMapping','back',h])
+                        html+='</div><br>'
+                    break
+                    case 'sphere':
+                        addLabel('Side')
+                        html+=contain
+                        addNumInput(['data','textureMapping','side',x])
+                        addNumInput(['data','textureMapping','side',y])
+                        addNumInput(['data','textureMapping','side',w])
+                        addNumInput(['data','textureMapping','side',h])
+                        html+='</div><br>'
+                    break
+                    case 'cylinder':
+                        addLabel('Top')
+                        html+=contain
+                        addNumInput(['data','textureMapping','top',x])
+                        addNumInput(['data','textureMapping','top',y])
+                        addNumInput(['data','textureMapping','top',w])
+                        addNumInput(['data','textureMapping','top',h])
+                        html+='</div><br>'
+                        addLabel('Side')
+                        html+=contain
+                        addNumInput(['data','textureMapping','side',x])
+                        addNumInput(['data','textureMapping','side',y])
+                        addNumInput(['data','textureMapping','side',w])
+                        addNumInput(['data','textureMapping','side',h])
+                        html+='</div><br>'
+                        addLabel('Bottom')
+                        html+=contain
+                        addNumInput(['data','textureMapping','bottom',x])
+                        addNumInput(['data','textureMapping','bottom',y])
+                        addNumInput(['data','textureMapping','bottom',w])
+                        addNumInput(['data','textureMapping','bottom',h])
+                        html+='</div><br>'
+                    break
+                }
+            }
+            addHead('Physics Shape')
+            addLabel('Use Physics')
+            addCheckbox(['physics','usePhysics'])
+            addLabel('Position')
+            html+=contain
+            addNumInput(['physics','position',0])
+            addNumInput(['physics','position',1])
+            addNumInput(['physics','position',2])
+            html+='</div><br>'
+            addLabel('Rotation')
+            html+=contain
+            addNumInput(['physics','rotation',0])
+            addNumInput(['physics','rotation',1])
+            addNumInput(['physics','rotation',2])
+            html+='</div><br>'
+            addLabel('Scale')
+            html+=contain
+            addNumInput(['physics','scale',0])
+            addNumInput(['physics','scale',1])
+            addNumInput(['physics','scale',2])
+            html+='</div><br>'
+            addHead('Script',true)
+            addTextInput(['script'],true)
+        break
+        case 'light':
+            addHead('Transform')
+            addLabel('Position')
+            html+=contain
+            addNumInput(['transform','position',0])
+            addNumInput(['transform','position',1])
+            addNumInput(['transform','position',2])
+            html+='</div><br>'
+            addLabel('Rotation')
+            html+=contain
+            addNumInput(['transform','rotation',0])
+            addNumInput(['transform','rotation',1])
+            addNumInput(['transform','rotation',2])
+            html+='</div><br>'
+            addLabel('Scale')
+            html+=contain
+            addNumInput(['transform','scale',0])
+            addNumInput(['transform','scale',1])
+            addNumInput(['transform','scale',2])
+            html+='</div><br>'
+            addLabel('Compute Transformations')
+            addCheckbox(['computeTransformations'])
+            addHead('Settings')
+            addLabel('Type')
+            addDropdown(['lightType'],[['ambient','Ambient'],['directional','Directional'],['point','Point']])
+            addLabel('Dynamic')
+            addCheckbox(['dynamic'])
+            addLabel('Color')
+            html+=contain
+            addNumInput(['color',0])
+            addNumInput(['color',1])
+            addNumInput(['color',2])
+            html+='</div><br>'
+            addLabel('Intensity')
+            addNumInput(['intensity'],true)
+            if(obj.lightType==='directional'||obj.lightType==='point'){
+                if(obj.lightType==='point'){
+                    addLabel('Attenuation Polynomial')
+                    addTextInput(['attenuationPolynomial'],true)
+                    addLabel('Inner Cone Angle')
+                    addNumInput(['innerCone'],true)
+                    addLabel('Outer Cone Angle')
+                    addNumInput(['outerCone'],true)
+                }
+                addLabel('Diffuse Remap Scale')
+                addNumInput(['diffuseRemapScale'],true)
+                addLabel('Diffuse Remap Add')
+                addNumInput(['diffuseRemapAdd'],true)
+            }
+            addLabel('Illuminates')
+            addCheckbox(['illuminates'])
+            addLabel('Illuminates Materials')
+            addTextInput(['illuminatesMaterials'],true)
+            addHead('Script',true)
+            addTextInput(['script'],true)
+        break
+        case 'renderTarget':
+            addHead('Settings')
+            addLabel('Resolution Type')
+            addDropdown(['resType'],[['scale','Scalar Value'],['define','Defined Value']])
+            addLabel('Width')
+            addNumInput(['width'],true)
+            addLabel('Height')
+            addNumInput(['height'],true)
+            addLabel('Depth Buffer')
+            addCheckbox(['depthBuffer'])
+            addLabel('Filtering')
+            addTextInput(['filtering'],true)
+            addLabel('Wrapping')
+            addTextInput(['wrapping'],true)
+            addLabel('Internal Format')
+            addTextInput(['internalFormat'],true)
+            addLabel('Format')
+            addTextInput(['format'],true)
+            addLabel('Memory Type')
+            addTextInput(['memoryType'],true)
+        break
+        case 'texture':
+            addHead('Settings')
+            addLabel('Width')
+            addNumInput(['width'],true)
+            addLabel('Height')
+            addNumInput(['height'],true)
+            addLabel('Mipmapping')
+            addCheckbox(['mipmapping'])
+            addLabel('Filtering')
+            addTextInput(['filtering'],true)
+            addLabel('Wrapping')
+            addTextInput(['wrapping'],true)
+            addLabel('Internal Format')
+            addTextInput(['internalFormat'],true)
+            addLabel('Format')
+            addTextInput(['format'],true)
+            addLabel('Memory Type')
+            addTextInput(['memoryType'],true)
+            addHead('Script',true)
+            addTextInput(['script'],true)
+        break
+        case 'material':
+            addHead('Rendering')
+            addLabel('Specular Exponent')
+            addNumInput(['specularExponent'],true)
+            addLabel('Specular Intensity')
+            addNumInput(['specularIntensity'],true)
+            addLabel('Texture')
+            addTextInput(['texture'],true)
+            addLabel('Normal Map')
+            addTextInput(['normalMap'],true)
+            addLabel('Recieve Shadows')
+            addCheckbox(['recieveShadows'])
+            addLabel('Recieve Shadows From')
+            addTextInput(['recieveShadowsFrom'],true)
+            addHead('Vertex Data')
+            addLabel('Position')
+            addCheckbox(['vertexData','position'])
+            addLabel('Normal')
+            addCheckbox(['vertexData','normal'])
+            addLabel('color')
+            addCheckbox(['vertexData','color'])
+            addLabel('UV')
+            addCheckbox(['vertexData','uv'])
+            addLabel('Extra Data Format')
+            addTextInput(['extraDataFormat'],true)
+            addLabel('Instanced Data Format')
+            addTextInput(['instancedDataFormat'],true)
+            addHead('Script',true)
+            addTextInput(['script'],true)
+        break
+        case 'MainRender':
+            addHead('Buffers')
+            addLabel('Outputs')
+            addTextInput(['outputs'],true)
+            addLabel('Depth Buffer')
+            addCheckbox(['depthBuffer'])
+        break
+        case 'PostProcessor':
+            addHead('Script',true)
+            addTextInput(['script'],true)
+            addHead('Buffers')
+            addLabel('Inputs')
+            addTextInput(['inputs'],true)
+            addLabel('Outputs')
+            addTextInput(['outputs'],true)
+            addLabel('Depth Buffer')
+            addCheckbox(['depthBuffer'])
+        break
+        default:
+            html+="<div style='text-align:center;font-size:10px;margin-top:20px;padding:5px'>This element does not have adjustable properties."+(obj.type==='script'?"<br><br>Double click on the asset to open and edit it.":'')+"</div>"
+        break
+    }
+    propertiesPage.innerHTML=html
+    
+    if(window.obj_name){
+        obj_name.oninput=()=>obj_name.value=obj_name.value.trim()
+        obj_name.onchange=()=>{
+            if(!obj_name.value.length){
+                alert('Invalid name!')
+                return
+            }
+            if(selectedElement.from==='hierarchy'){
+                let parent,hadParent,exit
+                recurse(programData_info._hierarchy,(o,i)=>{if(obj_name.value===i){alert('An existing object has this name!');obj_name.value=name;exit=true}if(i===name&&o[i].parent){parent=o[i].parent.name}})
+                if(exit)return
+                if(hadParent=parent+0)recurse(programData._hierarchy,(o,i)=>{if(i===parent)parent=o[i]});else parent={children:programData._hierarchy}
+                
+                let copy=JSON.parse(JSON.stringify(parent.children))
+                parent.children={}
+                if(!hadParent)programData._hierarchy=parent.children
+                for(let i in copy)if(i===name){parent.children[obj_name.value]=copy[i];}else parent.children[i]=copy[i]
+                
+                updateHierarchyPage()
+            }else if(selectedElement.from==='assets'){
+                
+                let copy=JSON.parse(JSON.stringify(programData._assets))
+                if(copy[obj_name.value]){alert('An existing asset has this name!');obj_name.value=name;return}
+                programData._assets={}
+                for(let i in copy)if(i===name){programData._assets[obj_name.value]=copy[i];}else programData._assets[i]=copy[i]
+                updateAssetsPage()
+            }
+            
+            updateNames()
+            updateInfoCopy()
+            selectedElement=0
+            updatePropertiesPage()
+        }
+    }
+    for(let i in inputChangesQ){
+        
+        let elem=document.getElementById('propertyInput_'+(Number(i)+1))
+        elem.onchange=(e,s=obj)=>{
+            
+            for(let j=0;j<inputChangesQ[i].length-1;j++)s=s[inputChangesQ[i][j]]
+            if(elem.type==='number'&&elem.min)elem.value=D.constrain(Number(elem.value),Number(elem.min)||-Infinity,Number(elem.max)||Infinity)+''
+            s[inputChangesQ[i][inputChangesQ[i].length-1]]=elem.type==='number'?Number(elem.value):elem.type==='checkbox'?elem.checked:elem.value
+            
+            updatePropertiesPage()
+        }
+    }
+}
+function updateSettingsPage(){
+    let html='',contain='<div style="display:inline-block;width:100%;">',inputChangesQ=[]
+    
+    function addCheckbox(path,br=true){
+        let s=programData._settings
+        for(let i in path)s=s[path[i]]
+        html+="<input id='propertyInput_"+inputChangesQ.push(path)+"' style='display:inline-block;width:12px;height:12px;margin-left:5px;margin-bottom:2px;transform:translate(0px,2px);cursor:pointer' type='checkbox' "+(s?'checked':'')+">"+(br?'<br>':'')
+    }
+    function addNumInput(path,br,minmax=''){
+        let s=programData._settings
+        for(let i in path)s=s[path[i]]
+        html+="<input id='propertyInput_"+inputChangesQ.push(path)+"' style='display:inline-block;margin-top:3px;width:32px;height:15px;font-size:11px;margin-left:5px;margin-bottom:2px;padding-bottom:2px' type='number' value='"+s+"' "+minmax+">"+(br?'<br>':'')
+    }
+    function addTextInput(path,br){
+        let s=programData._settings
+        for(let i in path)s=s[path[i]]
+        html+="<input spellcheck='false' id='propertyInput_"+inputChangesQ.push(path)+"' style='display:inline-block;margin-top:3px;width:125px;height:15px;font-size:11px;margin-left:5px;margin-bottom:2px;padding-bottom:2px' type='text' placeholder='...' value='"+(s?s:'')+"'>"+(br?'<br>':'')
+    }
+    function addDropdown(path,opt,w=85){
+        let s=programData._settings
+        for(let i in path)s=s[path[i]]
+        html+="<select id='propertyInput_"+inputChangesQ.push(path)+"' style='display:inline-block;margin-top:3px;width:"+w+"px;height:19px;font-size:11px;margin-left:5px;margin-bottom:2px;padding:2px 0px 4px 0px'>"
+        for(let i in opt)html+='<option value="'+opt[i][0]+'"'+(opt[i][0]===s?'selected':'')+'>'+opt[i][1]+'</option>'
+        html+='</select><br>'
+    }
+    function addLabel(s,m=10,f=11){
+        html+="<div style='display:inline-block;margin-top:2px;margin-left:"+m+"px;font-size:"+f+"px'>"+s+": </div>"
+    }
+    function addHead(h,il){
+        html+="<div style='"+(il?'display:inline-block;':'')+"margin-left:5px;margin-top:13px;margin-bottom:6px;margin-right:5px'><b style='font-size:12.5px'>"+h+"</b></div>"
+    }
+    addHead('Rendering')
+    addLabel('Anti-aliasing')
+    addCheckbox(['contextAttributes','antialias'])
+    addLabel('Preserve Drawing Buffer')
+    addCheckbox(['contextAttributes','preserveDrawingBuffer'])
+    addLabel('Depth')
+    addCheckbox(['contextAttributes','depth'])
+    addLabel('Stencil')
+    addCheckbox(['contextAttributes','stencil'])
+    addLabel('Alpha')
+    addCheckbox(['contextAttributes','alpha'])
+    addLabel('Premultiplied Alpha')
+    addCheckbox(['contextAttributes','premultipledAlpha'])
+    addHead('Physics')
+    addLabel('Time Multiplier')
+    addNumInput(['timeMultiplier'],true)
+    addLabel('Minimum Delta Time')
+    addNumInput(['minDeltaTime'],true)
+    addLabel('Maximum Delta Time')
+    addNumInput(['maxDeltaTime'],true)
+    addLabel('Gravity')
+    html+=contain
+    addNumInput(['gravity',0])
+    addNumInput(['gravity',1])
+    addNumInput(['gravity',2])
+    html+='</div><br>'
+    addLabel('Quaternion Normalization Skip')
+    addNumInput(['quatNormalizeSkip'],true)
+    addLabel('Fast Quaternion Normalization')
+    addCheckbox(['quatNormalizeFast'])
+    addLabel('Default Friction')
+    addNumInput(['defaultFriction'],true)
+    addLabel('Default Restitution')
+    addNumInput(['defaultRestitution'],true)
+    addHead('Dynamic Light Properties')
+    addLabel('Position')
+    addCheckbox(['dynamicLightsInfo','position'])
+    addLabel('Rotation')
+    addCheckbox(['dynamicLightsInfo','rotation'])
+    addLabel('Intensity')
+    addCheckbox(['dynamicLightsInfo','intensity'])
+    addLabel('Color')
+    addCheckbox(['dynamicLightsInfo','color'])
+    addLabel('Inner Cone')
+    addCheckbox(['dynamicLightsInfo','innerCone'])
+    addLabel('Outer Cone')
+    addCheckbox(['dynamicLightsInfo','outerCone'])
+    addLabel('Diffuse Remap Scale')
+    addCheckbox(['dynamicLightsInfo','diffuseRemapScale'])
+    addLabel('Diffuse Remap Add')
+    addCheckbox(['dynamicLightsInfo','diffuseRemapAdd'])
+    addHead('Texture Drawing')
+    addLabel('Texture Drawing Canvas Width')
+    addNumInput(['textureDrawingCanvasWidth'],true)
+    addLabel('Texture Drawing Canvas Height')
+    addNumInput(['textureDrawingCanvasHeight'],true)
+    addHead('Misc.')
+    addLabel('Vertex Data Attributes In Shadow Mapping Program')
+    addNumInput(['vertexDataAttributesInShadowMappingProgram'],true)
+    
+    settingsPage.innerHTML=html
+    
+    for(let i in inputChangesQ){
+        
+        let elem=document.getElementById('propertyInput_'+(Number(i)+1))
+        elem.onchange=(e,s=programData._settings)=>{
+            
+            for(let j=0;j<inputChangesQ[i].length-1;j++)s=s[inputChangesQ[i][j]]
+            if(elem.type==='number'&&elem.min)elem.value=D.constrain(Number(elem.value),Number(elem.min)||-Infinity,Number(elem.max)||Infinity)+''
+            s[inputChangesQ[i][inputChangesQ[i].length-1]]=elem.type==='number'?Number(elem.value):elem.type==='checkbox'?elem.checked:elem.value
+        }
+    }
+}
+function updateConsolePage(){
+    
+    // consolePage.innerHTML=''
+}
+
+hierarchyTabButton.onclick=()=>{hierarchyPage.style.display='block';pipelinePage.style.display='none';pipelineTabButton.style.backgroundColor='rgb(0,0,0,0.4)';hierarchyTabButton.style.backgroundColor='rgb(0,0,0,0)';hierarchyTabButton.style.cursor='default';pipelineTabButton.style.cursor='pointer';updateHierarchyPage()}
+pipelineTabButton.onclick=()=>{pipelinePage.style.display='block';hierarchyPage.style.display='none';hierarchyTabButton.style.backgroundColor='rgb(0,0,0,0.4)';pipelineTabButton.style.backgroundColor='rgb(0,0,0,0)';pipelineTabButton.style.cursor='default';hierarchyTabButton.style.cursor='pointer';updatePipelinePage()}
+propertiesTabButton.onclick=()=>{propertiesPage.style.display='block';settingsPage.style.display='none';settingsTabButton.style.backgroundColor='rgb(0,0,0,0.4)';propertiesTabButton.style.backgroundColor='rgb(0,0,0,0)';propertiesTabButton.style.cursor='default';settingsTabButton.style.cursor='pointer';updatePropertiesPage()}
+settingsTabButton.onclick=()=>{settingsPage.style.display='block';propertiesPage.style.display='none';propertiesTabButton.style.backgroundColor='rgb(0,0,0,0.4)';settingsTabButton.style.backgroundColor='rgb(0,0,0,0)';settingsTabButton.style.cursor='default';propertiesTabButton.style.cursor='pointer';updateSettingsPage()}
+
+assetsTabButton.onclick=()=>{assetsPage.style.display='block';scriptPage.style.display='none';consolePage.style.display='none';scriptTabButton.style.backgroundColor='rgb(0,0,0,0.4)';consoleTabButton.style.backgroundColor='rgb(0,0,0,0.4)';assetsTabButton.style.backgroundColor='rgb(0,0,0,0)';assetsTabButton.style.cursor='default';scriptTabButton.style.cursor=consoleTabButton.style.cursor='pointer';updateAssetsPage()}
+
+scriptTabButton.onclick=()=>{scriptPage.style.display='block';assetsPage.style.display='none';consolePage.style.display='none';assetsTabButton.style.backgroundColor='rgb(0,0,0,0.4)';consoleTabButton.style.backgroundColor='rgb(0,0,0,0.4)';scriptTabButton.style.backgroundColor='rgb(0,0,0,0)';scriptTabButton.style.cursor='default';assetsTabButton.style.cursor=consoleTabButton.style.cursor='pointer'}
+
+consoleTabButton.onclick=()=>{consolePage.style.display='block';assetsPage.style.display='none';scriptPage.style.display='none';assetsTabButton.style.backgroundColor='rgb(0,0,0,0.4)';scriptTabButton.style.backgroundColor='rgb(0,0,0,0.4)';consoleTabButton.style.backgroundColor='rgb(0,0,0,0)';consoleTabButton.style.cursor='default';assetsTabButton.style.cursor=scriptTabButton.style.cursor='pointer';updateConsolePage()}
+
+saveScriptPage.onclick=()=>programData._assets[connectedScript].code=codeEditor.session.getValue()
+
+clearConsoleButton.onclick=()=>consolePageList.innerHTML=''
+
+updateAssetsPage()
+hierarchyTabButton.onclick()
+propertiesTabButton.onclick()
+assetsTabButton.onclick()
+
+document.body.onclick=()=>contextMenu.style.display='none'
+
+}
+
+Engine()
+
+</script>
+
+<script type>
+
+function init(){
+
+console.log=console.error=console.warn=function(a){
+    
+    consolePageList.innerHTML+="<textarea readonly='true' style='background-color:rgb(0,0,0,0.2);user-select:text;color:white;width:99%;overflow-x:auto;height:15px'>"+a+"</textarea>"
+}
+
+let app=document.getElementById('application-source').text
+
+try{Object.constructor(app)()}catch(e){console.log(e)}
+
+}
+
+init()
+
+</script>
+
+<!--<script>-->
+</body>
+</html>
+
+
+
+
+
+
+
