@@ -7,7 +7,7 @@ window.CompileProgram=function(data){
         canvas.width=div.width
         canvas.height=div.height
         div.appendChild(canvas)
-        let Data=${JSON.stringify(data)},Engine={data:Data,deltaTime:0,time:0,then:0,timeMultiplier:Data._settings.timeMultiplier*0.001,maxDeltaTime:Data._settings.maxDeltaTime,minDeltaTime:Data._settings.minDeltaTime,width:canvas.width-0,height:canvas.height-0,aspect:(canvas.width-0)/(canvas.height-0),uniformedPrograms:{},canvas:canvas,div:div,physics:new CANNON.World(),cachedPowersOf2:[1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4194304,8388608,16777216,33554432,67108864,134217728,268435456,536870912,1073741824,2147483648]},AllObjects,Materials={},Scripts={},Textures={},Meshes,Lights_static,Lights_dynamic,Shadowers,Pipeline=Data._pipeline,arrayParse=(s)=>typeof s==='object'?s:s.substring(1,s.length-1).split(',').map(x=>x.length?isNaN(Number(x))?x.trim():Number(x.trim()):undefined).filter(x=>x!==undefined),dynamicLightInfoAmount=0,dynamicLightUniformArray
+        let Data=${JSON.stringify(data)},Engine={data:Data,deltaTime:0,time:0,then:0,timeMultiplier:Data._settings.timeMultiplier*0.001,maxDeltaTime:Data._settings.maxDeltaTime,minDeltaTime:Data._settings.minDeltaTime,width:canvas.width-0,height:canvas.height-0,aspect:(canvas.width-0)/(canvas.height-0),uniformedPrograms:{},canvas:canvas,div:div,physics:new CANNON.World(),cachedPowersOf2:[1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4194304,8388608,16777216,33554432,67108864,134217728,268435456,536870912,1073741824,2147483648]},nothing=()=>0,AllObjects,Materials={},Scripts={NothingScript:{OnCreate:nothing,OnUpdate:nothing,GetTexture:nothing,OnBeforeRender:nothing,OnAfterRender:nothing,OnMaterialSet:nothing}},Textures={},Meshes,Lights_static,Lights_dynamic,Shadowers,Pipeline=Data._pipeline,arrayParse=(s)=>typeof s==='object'?s:s.substring(1,s.length-1).split(',').map(x=>x.length?isNaN(Number(x))?x.trim():Number(x.trim()):undefined).filter(x=>x!==undefined),dynamicLightInfoAmount=0,dynamicLightUniformArray
         Engine.texCanvas=new OffscreenCanvas(Data._settings.textureDrawingCanvasWidth,Data._settings.textureDrawingCanvasHeight)
         Engine.texCTX=Engine.texCanvas.getContext('2d')
         
@@ -20,21 +20,23 @@ window.CompileProgram=function(data){
         Engine.physics.defaultContactMaterial.friction=Data._settings.defaultFriction
         Engine.physics.defaultContactMaterial.restitution=Data._settings.defaultRestitution
         
+        Engine.physics.allowSleep=Data._settings.allowSleep
+        
         Engine.noiseProperties={
-            octaves:5,
+            octaves:4,
             decay:0.5,
             upscale:2
         }
         Engine.Hash_1=(x)=>{
-            let n=(x+10.521)*x*3.6293-x*563.252
+            let n=x*563.2522-2637.12356
             return n-Math.floor(n)
         }
         Engine.Hash_2=(x,y)=>{
-            let n=(x*60.51+y*49.521-(x*y*257.611))*(x+y)
+            let n=(x*527.53851+y*439.522341-(x*y*257.611))
             return n-Math.floor(n)
         }
         Engine.Hash_3=(x,y,z)=>{
-            let n=(x*60.51+y*49.521*z*73.523-(x*y*100.836+z*201.51))*(x+y+z)
+            let n=x*124.518+y*129.321+z*131.145-(x*y*100.836+z*201.51)
             return n-Math.floor(n)
         }
         Engine.Smoothstep=(a,b,t)=>{
@@ -107,10 +109,13 @@ window.CompileProgram=function(data){
                     let c
                     switch(s.lang){
                         case 'js':
-                            c=Object.constructor('This','Engine','let Export={};'+s.code+'\\nreturn Export')(),nothing=()=>0
-                            Scripts[i].onCreate=c.OnCreate||nothing
-                            Scripts[i].onUpdate=c.OnUpdate||nothing
-                            Scripts[i].getTexture=c.GetTexture||nothing
+                            c=Object.constructor('This','Engine','let Export={};'+s.code+'\\nreturn Export')()
+                            Scripts[i].OnCreate=c.OnCreate||nothing
+                            Scripts[i].OnUpdate=c.OnUpdate||nothing
+                            Scripts[i].GetTexture=c.GetTexture||nothing
+                            Scripts[i].OnBeforeRender=c.OnBeforeRender||nothing
+                            Scripts[i].OnAfterRender=c.OnAfterRender||nothing
+                            Scripts[i].OnMaterialSet=c.OnMaterialSet||nothing
                         break
                         case 'glsl':
                             c=s.code.trim().split('@')
@@ -142,7 +147,7 @@ window.CompileProgram=function(data){
                     case 'geometry':
                     break
                     case 'camera':
-                        Engine.camera=o[i]
+                        Engine.primaryCamera=o[i]
                     break
                     case 'shadower':
                         Shadowers[i]=o[i]
@@ -156,6 +161,7 @@ window.CompileProgram=function(data){
                 if(Data._hierarchy[i])lastParent=undefined
                 o[i].parent=lastParent
                 o[i].name=i
+                o[i].script??='NothingScript'
                 if(o[i].type!=='geometry')AllObjects[i]=o[i]
                 if(o[i].children){
                     lastParent=o[i]
@@ -198,6 +204,8 @@ window.CompileProgram=function(data){
                     FragColor=vec4(0,0,0,1);
                 }\`,1)
         
+        Engine.glClearBits={none:0,color:D.gl.COLOR_BUFFER_BIT,depth:D.gl.DEPTH_BUFFER_BIT,color_depth:D.gl.COLOR_BUFFER_BIT|D.gl.DEPTH_BUFFER_BIT}
+        
         Engine.CompilePipeline=()=>{
             for(let i in Pipeline){
                 let p=Pipeline[i]
@@ -211,48 +219,66 @@ window.CompileProgram=function(data){
                     case 'UpdatePhysics':
                         p.run=()=>Engine.physics.step(Engine.deltaTime)
                     break
-                    case 'MainRender':
+                    case 'RenderPass':
                         
-                        Engine.mainRenderOutputFB=null
-                        
-                        p.outputs=arrayParse(p.outputs)
-                        if(p.outputs.length>1){
+                        if(p.sharedFramebuffer.length){
+                            for(let j in Pipeline)
+                                if(Pipeline[j].name===p.sharedFramebuffer)
+                                    p.fb=Pipeline[j].fb
+                        }else{
                             
-                            Engine.mainRenderOutputFB=D.createFramebuffer(false,p.depthBuffer)
-                            let draws=[]
-                            for(let i in p.outputs)
-                                draws.push(Data._assets[p.outputs[i]].tex)
-                            D.drawBuffers(draws)
-                        }else if(p.outputs.length===1){
+                            p.fb=null
                             
-                            Engine.mainRenderOutputFB=D.createFramebuffer(Data._assets[p.outputs[0]].tex,p.depthBuffer)
+                            p.outputs=arrayParse(p.outputs)
+                            if(p.outputs.length>1){
+                                
+                                p.fb=D.createFramebuffer(false,p.depthBuffer)
+                                let draws=[]
+                                for(let i in p.outputs)
+                                    draws.push(Data._assets[p.outputs[i]].tex)
+                                D.drawBuffers(draws)
+                            }else if(p.outputs.length===1){
+                                
+                                p.fb=D.createFramebuffer(Data._assets[p.outputs[0]].tex,p.depthBuffer)
+                            }
                         }
                         
-                        p.run=MainRender
+                        p.clearBitsEncoded=Engine.glClearBits[p.clearBits]
+                        p.cameraObject=Engine.allObjects[p.camera]||Engine.primaryCamera
+                        p.run=RenderPass
                     break
                     case 'PostProcessor':
-                        let texArr=[],out=null,w,h
+                        let texArr=[],w,h
                         p.outputs=arrayParse(p.outputs)
-                        if(p.outputs.length>1){
-                            
-                            out=D.createFramebuffer(false,p.depthBuffer)
-                            let draws=[]
-                            for(let i in p.outputs)
-                                draws.push(Data._assets[p.outputs[i]].tex)
-                            D.drawBuffers(draws)
-                            
-                        }else if(p.outputs.length===1){
-                            
-                            out=D.createFramebuffer(Data._assets[p.outputs[0]].tex,p.depthBuffer)
-                        }
                         
-                        if(out){
+                        if(p.sharedFramebuffer.length){
+                            for(let j in Pipeline)
+                                if(Pipeline[j].name===p.sharedFramebuffer)
+                                    p.fb=Pipeline[j].fb
+                        }else{
+                            
+                            p.fb=null
+                            if(p.outputs.length>1){
+                                
+                                p.fb=D.createFramebuffer(false,p.depthBuffer)
+                                let draws=[]
+                                for(let i in p.outputs)
+                                    draws.push(Data._assets[p.outputs[i]].tex)
+                                D.drawBuffers(draws)
+                                
+                            }else if(p.outputs.length===1){
+                                
+                                p.fb=D.createFramebuffer(Data._assets[p.outputs[0]].tex,p.depthBuffer)
+                            }
+                        }
+                        if(p.fb){
                             w=Data._assets[p.outputs[0]].tex.width
                             h=Data._assets[p.outputs[0]].tex.height
                         }else {
                             w=Engine.width
                             h=Engine.height
                         }
+                        
                         D.viewport(0,0,w,h)
                         p.program=D.createProgram(Scripts[p.script].vsh,Scripts[p.script].fsh,1)
                         p.inputs=arrayParse(p.inputs)
@@ -260,13 +286,24 @@ window.CompileProgram=function(data){
                             texArr.push(i,Data._assets[p.inputs[i]].tex)
                             D.setUniform('input_'+i,i)
                         }
+                        
+                        p.clearBitsEncoded=Engine.glClearBits[p.clearBits]
+                        p.cameraObject=Engine.allObjects[p.camera]||Engine.primaryCamera
                         p.run=()=>{
                             D.useProgram(p.program)
-                            D.bindFramebuffer(out)
+                            D.bindFramebuffer(p.fb)
+                            
+                            if(p.clearBitsEncoded){
+                                
+                                D.gl.clearColor(p.clearColor[0],p.clearColor[1],p.clearColor[2],p.clearColor[3])
+                                D.gl.clear(p.clearBitsEncoded)
+                            }
+                            
                             D.viewport(0,0,w,h)
                             D.activeTextures(texArr)
                             D.setUniform('time',[Engine.time])
-                            D.setUniform('viewMatrix',Engine.camera.transform.viewMatrix)
+                            D.setUniform('viewMatrix',p.cameraObject.transform.viewMatrix)
+                            D.setUniform('camPos',p.cameraObject.transform.matrix.slice(12,15))
                             D.renderMesh(screenMesh)
                         }
                     break
@@ -281,11 +318,11 @@ window.CompileProgram=function(data){
         Engine.GetObject=(i)=>AllObjects[i]
         Engine.GetPass=(i)=>Data._pipeline[i]
         
-        Engine.CreateElement=(type)=>({material:{type:'material',specularExponent:300,specularIntensity:0.75,extraDataFormat:'[]',vertexData:{position:true,normal:true,color:true,uv:true},texture:'[]',normalMap:'',instancedDataFormat:'[]',recieveShadows:true,recieveShadowsFrom:'[]'},renderTarget:{type:'renderTarget',width:1,height:1,resType:'scale'},texture:{type:'texture',width:128,height:128,filtering:'NEAREST',wrapping:'REPEAT',internalFormat:'RGBA',format:'RGBA',memoryType:'UNSIGNED_BYTE',mipmapping:true},block:{type:'block',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true},camera:{type:'camera',clearColor:[0,0,0,1],transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,projectionType:'perspective',FOV:70,near:0.01,far:1000},shadower:{type:'shadower',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,projectionType:'perspective',FOV:50,near:1,far:25,computeShadowMap:true,width:512,height:512,blurSamples:1,blurRadius:0.001,intensity:0.35,biasScale:0.1,biasAdd:0.001},mesh:{type:'mesh',material:'DefaultMaterial',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,render:true,wireframe:false,castShadows:true,castShadowsTo:'[]',defaultData:'[]',physics:{usePhysics:false,type:'DYNAMIC',mass:1,collisionGroup:0,collisionMask:'[]',fixedRotation:false}},geometry:{type:'geometry',render:true,data:{type:'sphere',x:0,y:0,z:0,w:1,h:1,l:1,radius:0.5,radius2:0.5,height:1,detail:1,r:1,g:1,b:1,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},autoUVBounds:true,physics:{usePhysics:true,position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]}},light:{type:'light',lightType:'point',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,dynamic:false,intensity:1,color:[1,1,1],attenuationPolynomial:'X*X',innerCone:-1,outerCone:-1,diffuseRemapScale:1,diffuseRemapAdd:0,illuminates:true,illuminatesMaterials:'[]'},UpdatePhysics:{type:'UpdatePhysics'},ComputeTransformations:{type:'ComputeTransformations'},RenderShadowMaps:{type:'RenderShadowMaps'},MainRender:{type:'MainRender',outputs:'[]',framebufferDepthBuffer:true},PostProcessor:{type:'PostProcessor',inputs:'[]',outputs:'[]',depthBuffer:false,filtering:'NEAREST',wrapping:'CLAMP_TO_EDGE',internalFormat:'RGBA',format:'RGBA',memoryType:'UNSIGNED_BYTE'}})[type]
+        Engine.CreateElement=(type)=>({material:{type:'material',specularExponent:300,specularIntensity:0.75,extraDataFormat:'[]',vertexData:{position:true,normal:true,color:true,uv:true},texture:'[]',normalMap:'',instancedDataFormat:'[]',recieveShadows:true,recieveShadowsFrom:'[]'},renderTarget:{type:'renderTarget',width:1,height:1,resType:'scale'},texture:{type:'texture',width:128,height:128,filtering:'NEAREST',wrapping:'REPEAT',internalFormat:'RGBA',format:'RGBA',memoryType:'UNSIGNED_BYTE',mipmapping:true},block:{type:'block',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true},camera:{type:'camera',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,projectionType:'perspective',FOV:70,near:0.01,far:1000},shadower:{type:'shadower',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,projectionType:'perspective',FOV:50,near:1,far:25,computeShadowMap:true,width:512,height:512,blurSamples:1,blurRadius:0.001,intensity:0.35,biasScale:0.1,biasAdd:0.001},mesh:{type:'mesh',material:'DefaultMaterial',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,render:true,passesRenderedTo:'[]',wireframe:false,castShadows:true,castShadowsTo:'[]',defaultData:'[]',physics:{usePhysics:false,type:'DYNAMIC',mass:1,collisionGroup:0,collisionMask:'[]',fixedRotation:false}},geometry:{type:'geometry',render:true,data:{type:'sphere',x:0,y:0,z:0,w:1,h:1,l:1,radius:0.5,radius2:0.5,height:1,detail:1,r:1,g:1,b:1,rx:0,ry:0,rz:0,sx:1,sy:1,sz:1,obj:'',textureMapping:D.DTMPING_(),data:'[]'},autoUVBounds:true,physics:{usePhysics:true,position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]}},light:{type:'light',lightType:'point',transform:{position:[0,0,0],rotation:[0,0,0],scale:[1,1,1]},computeTransformations:true,dynamic:false,intensity:1,color:[1,1,1],attenuationPolynomial:'X*X',innerCone:-1,outerCone:-1,diffuseRemapScale:1,diffuseRemapAdd:0,illuminates:true,illuminatesMaterials:'[]'},UpdatePhysics:{type:'UpdatePhysics'},ComputeTransformations:{type:'ComputeTransformations'},RenderShadowMaps:{type:'RenderShadowMaps'},RenderPass:{type:'RenderPass',name:'MainRenderPass',camera:'',clearColor:[0,0,0,1],clearBits:'color_depth',sharedFramebuffer:'',outputs:'[]',framebufferDepthBuffer:true},PostProcessor:{type:'PostProcessor',name:'MainRenderPass',camera:'',clearColor:[0,0,0,1],clearBits:'color_depth',sharedFramebuffer:'',inputs:'[]',outputs:'[]',depthBuffer:false}})[type]
         
         function InitalizeTexture(m){
             
-            if(m.script)data=Scripts[m.script].getTexture(Engine.texCTX,Engine)
+            if(m.script)data=Scripts[m.script].GetTexture(Engine.texCTX,Engine)
             m.texture=D.createTexture(m.width,m.height,data,m.filtering,m.wrapping,m.internalFormat,m.format,m.memoryType,m.mipmapping)
         }
         
@@ -503,6 +540,14 @@ void main(){
                     type:CANNON.Body[p.type]
                 })
             }
+            m.passesAllowedToRenderTo={}
+            m.passesRenderedTo=arrayParse(m.passesRenderedTo)
+            if(m.passesRenderedTo.length)
+                for(let i in m.passesRenderedTo)
+                    m.passesAllowedToRenderTo[m.passesRenderedTo[i]]=1
+            else
+                m.renderAllPasses=1
+            
             m.shadowers=[]
             m.castShadowsTo=arrayParse(m.castShadowsTo)
             for(let i in Shadowers){
@@ -572,6 +617,7 @@ void main(){
         Engine.InitalizeMesh=InitalizeMesh
         
         function InitalizeTransform(o){
+            o.script??='NothingScript'
             o.transform={localMatrix:D.createIdentityMatrix(),matrix:D.createIdentityMatrix(),position:o.transform.position,rotation:quat.fromEuler([],...o.transform.rotation),scale:o.transform.scale}
             if(o.type==='camera'||o.type==='shadower'){
                 
@@ -588,10 +634,14 @@ void main(){
         }
         Engine.InitalizeTransform=InitalizeTransform
         
-        canvas.onresize=function(){
-            Engine.width=canvas.clientWidth
-            Engine.height=canvas.clientHeight
-            Engine.camera.computeProjectionMatrix()
+        canvas.onresize=window.onresize=function(){
+            Engine.width=Math.min(window.innerWidth,canvas.clientWidth)
+            Engine.height=Math.min(window.innerHeight,canvas.clientHeight)
+            Engine.aspect=Engine.width/Engine.height
+            
+            for(let i in Engine.allObjects)
+                if(Engine.allObjects[i].type==='camera')
+                    Engine.allObjects[i].computeProjectionMatrix()
             D.viewport(0,0,Engine.width,Engine.height)
         }
         
@@ -600,7 +650,7 @@ void main(){
         function computeTransformations(is1stFrame){
             for(let i in AllObjects){
                 let o=AllObjects[i],ot=o.transform
-                if(o.script&&!is1stFrame) Scripts[o.script].onUpdate(o,Engine)
+                if(!is1stFrame) Scripts[o.script].OnUpdate(o,Engine)
                 
                 if(!o.computeTransformations&&!is1stFrame)continue
                 if(o.physics&&o.physics.usePhysics&&o.physics.body){
@@ -625,7 +675,6 @@ void main(){
                 }else if(o.type==='light'){
                     
                     vec3.transformQuat(ot.direction,D.NEG_Z,ot.rotation)
-                    // never-nesters fear me
                     ${(function(){
                         let s='if(o.dynamic){let idx=o.index;'
                         for(let i in data._settings.dynamicLightsInfo)
@@ -681,30 +730,37 @@ void main(){
                 D.viewport(0,0,Engine.width,Engine.height)
             }
         }
-        function MainRender(){
-            D.bindFramebuffer(Engine.mainRenderOutputFB)
+        function RenderPass(){
+            D.bindFramebuffer(this.fb)
             
-            D.clear(...Engine.camera.clearColor)
+            if(this.clearBitsEncoded){
+                
+                D.gl.clearColor(this.clearColor[0],this.clearColor[1],this.clearColor[2],this.clearColor[3])
+                D.gl.clear(this.clearBitsEncoded)
+            }
             
             Engine.uniformedPrograms={}
             Engine.lastUsedProgram=0
             for(let i in Meshes){
-                if(!Meshes[i].render) continue
+                if(!Meshes[i].render||!Meshes[i].passesAllowedToRenderTo[this.name]&&!Meshes[i].renderAllPasses) continue
                 if(Engine.lastUsedProgram!==Meshes[i].material){
                     Engine.lastUsedProgram=Meshes[i].material
                     D.useProgram(Materials[Meshes[i].material].program)
                     if(!Engine.uniformedPrograms[Meshes[i].material]){
                         Engine.uniformedPrograms[Meshes[i].material]=true
-                        D.setUniform('viewMatrix',Engine.camera.transform.viewMatrix)
-                        D.setUniform('camPos',Engine.camera.transform.matrix.slice(12,15))
+                        D.setUniform('viewMatrix',this.cameraObject.transform.viewMatrix)
+                        D.setUniform('camPos',this.cameraObject.transform.matrix.slice(12,15))
                         D.setUniform('time',[Engine.time])
                         if(Engine.dynamicLightsAmount)
                             D.setUniform('dynamicLightInfoArray',dynamicLightUniformArray)
                         D.activeTextures(Materials[Meshes[i].material].activeTexturesArr)
                     }
+                    Scripts[Meshes[i].script].OnMaterialSet(Meshes[i],Engine)
                 }
                 D.setUniform('modelMatrix',Meshes[i].transform.matrix)
+                Scripts[Meshes[i].script].OnBeforeRender(Meshes[i],Engine)
                 D.renderMesh(Meshes[i].mesh)
+                Scripts[Meshes[i].script].OnAfterRender(Meshes[i],Engine)
             }
         }
         
@@ -722,7 +778,7 @@ void main(){
             
         for(let i in Meshes)InitalizeMesh(Meshes[i])
         
-        for(let i in AllObjects)if(AllObjects[i].script)Scripts[AllObjects[i].script].onCreate(AllObjects[i],Engine)
+        for(let i in AllObjects)Scripts[AllObjects[i].script].OnCreate(AllObjects[i],Engine)
         
         renderShadowMaps(true)
         
